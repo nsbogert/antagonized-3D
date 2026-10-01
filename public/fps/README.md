@@ -184,8 +184,8 @@ order. Eggs use the same aim assist and damage as carcasses, splat on impact,
 and can subdue a foamed soldier. Full inventory leaves eggs on the ground.
 Restart restores clutches; saved chapter loadouts preserve mixed ammo.
 
-Marin carries three bait traps. Each lasts 25 seconds. E at a supply bench
-refills all three without a limit; each sealed cache restores one up to three.
+Marin carries one bait trap at a time. Each lasts 25 seconds. E at a supply bench
+restores the single bait slot; each sealed cache also restores it. Bait never stacks.
 The HUD shows current / maximum bait, and the guide explains both refill routes.
 
 ## Chapter 04 · The Royal Chamber
@@ -203,7 +203,7 @@ and visit supplies. No food-cache or elevated-clue objective gates this fight.
 - Foam interrupts for 3 seconds with a 10-second cooldown. Spray damages exposed
   health; mist handles crowds and can damage the queen in an opening.
 - 24 eggs across eight clutches share the normal ammo inventory. Two E supply
-  stations refill health, tank, bait, and egg clutches indefinitely.
+  stations refill health, tank, the single bait slot, and egg clutches indefinitely.
 - Phase transitions provide six seconds of respite, full health/tank/bait, and
   renewed eggs. Workers are replenished slowly, with at most six live workers
   and two live flyers. Soldiers remain reusable mounts.

@@ -2,7 +2,7 @@ import {CHAPTERS} from './chapters.mjs';
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 export const distanceXZ = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 export const MAX_AMMO = 3;
-export const MAX_BAITS = 3;
+export const MAX_BAITS = 1;
 export const GRAVITY = 22;
 export const JUMP_SPEED = 10.8;
 

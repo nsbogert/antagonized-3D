@@ -16,7 +16,7 @@ const cache=new Map();
 function mod(file){file=path.resolve(file);if(cache.has(file))return cache.get(file);const m=new vm.SourceTextModule(fs.readFileSync(file,'utf8'),{context,identifier:file});cache.set(file,m);return m;}
 (async()=>{
  const root=mod(path.join(fpsRoot,'game.mjs'));await root.link((specifier,parent)=>mod(path.resolve(path.dirname(parent.identifier),specifier)));await root.evaluate();
- const g=window.antagonized;g.reset();assert.equal(g.state.chapter,4);assert.equal(g.state.queen.mode,'dormant');assert.equal(g.world.eggSpawns.length,24);
+ const g=window.antagonized;g.reset();assert.equal(g.state.chapter,4);assert.equal(g.state.baits,1,'start with one bait');assert.equal(g.state.queen.mode,'dormant');assert.equal(g.world.eggSpawns.length,24);
  for(const a of g.ants){a.x=22;a.z=22;a.root.position.set(22,0,22);}
  g.teleport(0,0,8);g.step(.02);assert.equal(g.state.queen.mode,'idle');
  function advance(seconds){for(let t=0;t<seconds;t+=.02){g.step(.02);g.world.syncQueen(g.state.queen,t);}}
@@ -32,12 +32,12 @@ function mod(file){file=path.resolve(file);if(cache.has(file))return cache.get(f
    if(phase===2&&g.state.queen.open<=0)g.state.queen.open=8; // Isolate damage wiring; warning/recovery rules have independent tests.
    g.primaryAction();advance(.1);
   }
-  assert.ok(g.state.queen.phase>phase||g.state.won,'spray progresses phase '+phase);
+  assert.ok(g.state.queen.phase>phase||g.state.won,'spray progresses phase '+phase);assert.equal(g.state.baits,1,'phase resupply respects one bait slot');
  }
  assert.equal(g.state.won,true);assert.equal(g.state.queen.mode,'dead');assert.equal(g.state.ended,true);assert.match(document.getElementById('ending-title').textContent,/Marin/);
  assert.equal(document.getElementById('theme-music').src,'assets/marin-vs-the-colony.mp3');
  g.reset();assert.equal(g.state.queen.mode,'dormant');assert.equal(g.state.queen.phase,0);assert.equal(g.state.health,5);assert.equal(g.state.ended,false);
- g.state.baits=0;g.state.health=1;g.teleport(g.world.supplyPoints[1].x,0,g.world.supplyPoints[1].z);g.interact();assert.equal(g.state.baits,3);assert.equal(g.state.health,5);
+ g.state.baits=0;g.state.health=1;g.teleport(g.world.supplyPoints[1].x,0,g.world.supplyPoints[1].z);g.interact();assert.equal(g.state.baits,1);assert.equal(g.state.health,5);g.interact();assert.equal(g.state.baits,1,'refills cannot stack bait');
  g.reset();g.teleport(0,0,10);g.step(.02);g.state.queen.phase=1;g.state.queen.hp=30;g.state.queen.armor=9;
  const soldier=g.ants.find(a=>a.type==='soldier');g.hit(soldier,1,'foam');g.hit(soldier,3,'egg');g.teleport(soldier.x,0,soldier.z);g.interact();assert.equal(g.state.ride,soldier);
  g.teleport(0,0,1.8);g.setKeys('KeyW','KeyC');g.step(.05);g.setKeys();assert.equal(g.state.queen.armor,0,'actual mounted charge exposes queen');

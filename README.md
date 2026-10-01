@@ -43,7 +43,7 @@ a chapter is not saved; retry begins at its entrance.
 | Shift | Attack |
 | 1–4 | Throw / cannon, spray, foam, mist |
 | E | Interact, mount, dismount, refill at supplies |
-| Q | Place bait (carry 3; supplies refill them) |
+| Q | Place bait (carry 1; supplies refill it) |
 | C | Sprint / mounted charge |
 | R | Level the view |
 | H | Field guide |
