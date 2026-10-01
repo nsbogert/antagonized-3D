@@ -212,7 +212,7 @@ and visit supplies. No food-cache or elevated-clue objective gates this fight.
 
 `royal.mjs` builds the arena and queen model. `queen-core.mjs` contains the
 independent phase, armor, attack, warning, and vulnerability rules. Chapter 04
-temporarily uses the revised Mid-Spooky track until its own song is supplied.
+uses the supplied “The Queen Beneath” track (`assets/the-queen-beneath.mp3`).
 
 Run `node --experimental-vm-modules public/fps/tests/queen-runtime.cjs` for the
 offline Babylon NullEngine integration check: actual scene construction, egg

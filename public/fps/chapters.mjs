@@ -40,7 +40,7 @@ export const CHAPTERS = {
   },
   4: {
     next:null,place:'royal chamber',loadoutKey:'antagonized.queenLoadout',climbObject:'root ledges',
-    music:{src:'assets/mid-spooky-v2.mp3',title:'Mid-Spooky · temporary queen battle track'},
+    music:{src:'assets/the-queen-beneath.mp3',title:'The Queen Beneath'},
     number:'04',name:'THE ROYAL CHAMBER',location:'QUEEN’S CHAMBER',highLocation:'ROOT LEDGE',
     spawn:{x:0,y:0,z:20},exit:{x:0,y:0,z:22},nest:{x:0,z:-3},
     title:'One queen.<br>Your <em>home.</em>',start:'Face the queen',

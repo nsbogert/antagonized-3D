@@ -70,7 +70,7 @@ flag and may print an experimental-feature notice.
 - `public/fps/vendor/` — pinned Babylon.js 8.26.0 and its license.
 - `server.js` — dependency-free local static server.
 
-The queen battle temporarily shares Chapter 3’s revised **Mid-Spooky** track.
+The queen battle plays **The Queen Beneath**; Chapter 3 uses **Mid-Spooky**.
 The original **Marin vs. the Colony** theme returns for victory.
 
 See [the game notes](public/fps/README.md) for detailed mechanics and implementation.
