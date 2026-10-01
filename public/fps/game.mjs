@@ -1,3 +1,4 @@
+import {victoryCaption} from './victory-core.mjs';
 import {createQueen,damageQueen,stepQueen,queenCenter,queenProgress,queenHint,QUEEN_PHASES} from './queen-core.mjs';
 import {CHAPTERS,chapterNumber,chapterLoadout,nearLevelPoint} from './chapters.mjs';
 import {clamp,distanceXZ,canStomp,segmentHitsSphere,damageAnt,collectWorker,cacheIsClear,nearestBait,objectiveFor,stompTarget,SPRAY,beginReload,updateTank,collectGear,canAutoCollect,RELOAD_TIME,surfaceHeightAt,applyFoam,foamMovementScale,SOLDIER_FOAM_SECONDS,MAX_BAITS,collectAmmo,consumeAmmo,ammoKinds} from './core.mjs';
@@ -7,6 +8,7 @@ const B=window.BABYLON, $=id=>document.getElementById(id), canvas=$('world');
 const chapter=chapterNumber(new URLSearchParams(location.search).get('chapter')),level=CHAPTERS[chapter];
 let carriedGear=null;try{carriedGear=JSON.parse(localStorage.getItem(level.loadoutKey||'antagonized.noLoadout'));}catch{}
 const startingLoadout=chapterLoadout(chapter,carriedGear);
+if(chapter===4)$('victory-art').src='assets/marin-victory.png';
 let engine,scene,camera,world,view;
 try {
   if(!B?.Engine.isSupported()) throw new Error('WebGL unavailable');
@@ -34,7 +36,7 @@ const gesture=new LookGesture();let lookMode='drag',hadPointerLock=false;
 const keys=new Set();let firing=false,fireCooldown=0,toastTime=0,bob=0,interactTarget=null,targetAnt=null,clock=0,spawnTimer=35,uiTick=0,stepTimer=0,recoil=0,guideWasPaused=true;
 let jumpTarget=null;
 const music=$('theme-music');music.volume=.28;music.src=level.music.src;$('music-status').textContent=level.music.title;
-function syncMusic(){if(state.started&&((!state.paused&&!state.ended)||(state.won&&chapter===4))&&$('music-enabled').checked){music.play().catch(()=>{$('music-status').textContent='Music paused by browser — toggle music to retry.';});}else music.pause();}
+function syncMusic(){if(state.started&&((!state.paused&&!state.ended)||(state.won&&chapter===4&&!state.cinematicPaused))&&$('music-enabled').checked){music.play().catch(()=>{$('music-status').textContent='Music paused by browser — toggle music to retry.';});}else music.pause();}
 $('music-enabled').onchange=syncMusic;$('music-volume').oninput=()=>music.volume=Number($('music-volume').value);
 music.addEventListener('playing',()=>{$('music-status').textContent=state.won&&chapter===4?'Marin vs. the Colony · victory':level.music.title;});
 music.addEventListener('error',()=>{$('music-status').textContent='Theme could not load. Game audio is still available.';});
@@ -43,7 +45,7 @@ function sound(freq=200,duration=.1,type='sine',volume=.04,slide=0){if(!soundEna
 function toast(text,seconds=3.3){$('toast').textContent=text;$('toast').classList.add('visible');toastTime=seconds;}
 function spawnAnt(type,x,z,cacheIndex=0){const visual=world.makeAnt(type);const a={...visual,type,x,y:type==='flyer'?3:0,z,hp:type==='flyer'?2:1,state:'alive',foam:0,subdued:0,cacheIndex,job:'food',carry:false,phase:Math.random()*6.28,attack:0,deadTime:0,homeX:x,homeZ:z};a.root.position.set(x,a.y,z);a.crumb=world.ball('carried food',0,.62,1.08,.24,.25,.25,world.M.yellow,a.root);a.crumb.setEnabled(false);a.foamMesh=world.ball('foam coating',0,.28,0,1.3,.85,1.8,world.M.foam,a.root);a.foamMesh.setEnabled(false);ants.push(a);return a;}
 function reset(){
-  queenToastCooldown=0;state.queen=chapter===4?createQueen():null;state.won=false;music.src=level.music.src;$('music-status').textContent=level.music.title;
+  queenToastCooldown=0;state.queen=chapter===4?createQueen():null;state.won=false;state.cinematic=false;state.cinematicPaused=false;$('cinematic').hidden=true;$('victory-portrait').hidden=true;$('replay-film').hidden=true;$('ending').classList.remove('royal-victory');$('cinematic').dataset.stage='';music.src=level.music.src;$('music-status').textContent=level.music.title;
   world.resetChapter();view.root.setEnabled(true);world.gearPickup.setEnabled(true);jumpTarget=null;music.currentTime=0;
   for(const a of ants){a.root.dispose();a.shadow.dispose();}ants.length=0;
   for(const list of [eggs,projectiles,baits,patches,clouds,particles]){for(const p of list)p.node?.dispose();list.length=0;}
@@ -76,7 +78,7 @@ function lockPointer(){
   try{const result=canvas.requestPointerLock();result?.catch(dragFallback);setTimeout(()=>{if(!document.pointerLockElement)dragFallback();},400);}catch{dragFallback();}
 }
 
-function pause(){if(!state.started||state.ended)return;state.paused=true;firing=false;gesture.clear();keys.clear();$('pause').hidden=false;syncMusic();if(document.pointerLockElement)document.exitPointerLock();}
+function pause(){if(state.cinematic){state.cinematicPaused=true;$('cinematic-toggle').textContent='Resume film';syncMusic();return;}if(!state.started||state.ended)return;state.paused=true;firing=false;gesture.clear();keys.clear();$('pause').hidden=false;syncMusic();if(document.pointerLockElement)document.exitPointerLock();}
 function resume(){state.paused=false;$('pause').hidden=true;$('guide').hidden=true;syncMusic();lockPointer();}
 function openGuide(){guideWasPaused=state.paused;if(state.started){state.paused=true;firing=false;gesture.clear();keys.clear();}if(document.pointerLockElement)document.exitPointerLock();$('pause').hidden=true;$('guide').hidden=false;syncMusic();}
 function closeGuide(){$('guide').hidden=true;if(state.started){if(guideWasPaused){$('pause').hidden=false;}else resume();}}
@@ -89,7 +91,7 @@ document.addEventListener('pointerlockchange',()=>{
 });
 document.addEventListener('pointerlockerror',dragFallback);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
-window.addEventListener('blur',()=>{keys.clear();firing=false;if(state.started&&!state.paused)pause();});
+window.addEventListener('blur',()=>{keys.clear();firing=false;if(state.cinematic||state.started&&!state.paused)pause();});
 canvas.addEventListener('pointerdown',e=>{
   if(state.paused||state.ended||e.button>2)return;
   canvas.focus({preventScroll:true});
@@ -112,6 +114,8 @@ document.addEventListener('pointercancel',()=>{gesture.clear();firing=false;upda
 document.addEventListener('keydown',e=>{
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
   if(e.repeat)return;
+  if(e.code==='Escape'&&state.cinematic){toggleCinematic();return;}
+  if(state.cinematic)return;
   if(e.code==='Escape'){if(!$('guide').hidden)closeGuide();else if(state.started&&!state.ended){if(state.paused)resume();else pause();}return;}
   if(e.code==='KeyH'){if(!$('guide').hidden)closeGuide();else openGuide();return;}
   if(state.paused||state.ended)return;keys.add(e.code);if(e.code.startsWith('Arrow'))keyboardLook(camera.rotation,new Set([e.code]),.055,Number($('sensitivity').value));
@@ -154,13 +158,14 @@ function hitQueen(amount,kind){
 function updateQueen(dt){
   const q=state.queen;if(!q||state.ended)return;
   queenToastCooldown=Math.max(0,queenToastCooldown-dt);
+  const slamTarget=q.target?{...q.target}:null;
   const repairs=ants.filter(a=>a.type==='worker'&&a.state==='alive'&&a.foam<=0&&distanceXZ(a,q)<6&&!nearestBait(a,baits)).length;
   for(const event of stepQueen(q,dt,player,repairs)){
     if(event==='hurt'){if(state.ride)dismount();hurt(true);}
     if(event==='awaken'){toast('The queen awakens. Bait her workers away and blast the resin armor.',5);sound(65,.7,'sawtooth',.045,45);}
     if(event==='repair')toast('She is stopping for repairs. Bait her workers away!',3);
     if(event==='warning'){toast(queenHint(q),2);sound(q.attack==='slam'?95:160,.45,'triangle',.045,80);}
-    if(event==='slam'){burst(V(player.x,.2,player.z),world.M.terra,16,5);sound(60,.5,'triangle',.06,-25);}
+    if(event==='slam'){const point=slamTarget||q;world.queenSlam(point);burst(V(point.x,.2,point.z),world.M.terra,16,5);sound(60,.5,'triangle',.06,-25);}
     if(event==='opening'&&q.phase===2)toast('She is exposed! Spray or throw now.',3);
   }
 }
@@ -366,14 +371,40 @@ function updateHUD(){const obj=objectiveFor(state);$('objective-title').textCont
   world.clueMarker.el.hidden=state.clue||state.secured<3;world.doorMarker.el.hidden=!state.clue||state.secured<3;
 }
 function updateMarkers(){const size={width:engine.getRenderWidth(),height:engine.getRenderHeight()};const viewport=camera.viewport.toGlobal(size.width,size.height);for(const m of world.markers){m.beacon.setEnabled(!m.el.hidden);if(m.el.hidden)continue;const animate=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;const wave=animate?Math.sin(clock*2.5+m.phase):0;m.beacon.position.y=m.groundY+.05;m.ring.scaling.setAll(1+wave*.1);m.diamond.position.y=m.pos.y-m.groundY-.55+wave*.13;m.diamond.rotation.y=animate?clock*.75:0;m.el.style.setProperty('--marker-bob',`${wave*5}px`);m.el.style.setProperty('--marker-glow',`${8+wave*4}px`);const point=B.Vector3.Project(m.pos,B.Matrix.Identity(),scene.getTransformMatrix(),viewport);const dist=B.Vector3.Distance(camera.position,m.pos);const front=B.Vector3.Dot(m.pos.subtract(camera.position),forward())>0;m.el.style.display=front&&point.z>=0&&point.z<=1&&dist>3?'block':'none';m.el.style.left=point.x/size.width*100+'%';m.el.style.top=point.y/size.height*100+'%';m.el.querySelector('small').textContent=Math.round(dist)+' m';}}
-function finish(won){state.won=won;$('ending-note').textContent=won?(level.next?`Next: Chapter ${CHAPTERS[level.next].number} · ${CHAPTERS[level.next].name}`:'The colony is defeated · Marin’s home is hers again.'):'Retry begins at the start of this chapter.';if(won&&chapter===4){music.src='assets/marin-vs-the-colony.mp3';music.currentTime=0;}if(won)world.finishChapter();gesture.clear();state.ended=true;state.paused=true;syncMusic();firing=false;gesture.clear();keys.clear();if(document.pointerLockElement)document.exitPointerLock();$('ending').hidden=false;$('pause').hidden=true;$('ending-eyebrow').textContent=won?`CHAPTER ${level.number} COMPLETE`:'A MINOR SETBACK';$('ending-title').textContent=won?level.winTitle:'Back on your feet.';$('ending-copy').textContent=won?level.winCopy:chapter===4?'The queen held her ground. Watch the red warnings, strike during openings, and visit field supplies to recover. Your next attempt starts at the chamber entrance.':'The ants won this round. Try baiting workers away from their food, stomping for ammo, and visiting the tool bench to recover.';$('ending-stats').innerHTML=`<div><b>${chapter===4?(state.queen.mode==='dead'?3:state.queen.phase):state.secured}/3</b>${chapter===4?'phases beaten':'caches secured'}</div><div><b>${state.stomps}</b>stomps</div><div><b>${Math.floor(state.time/60)}:${String(Math.floor(state.time%60)).padStart(2,'0')}</b>time</div>`;$('next-chapter').hidden=!(won&&level.next);$('next-chapter').textContent=level.next?CHAPTERS[level.next].start+' ↗':'';$('replay').className=won&&level.next?'secondary':'primary';if(won&&level.next){try{localStorage.setItem(CHAPTERS[level.next].loadoutKey,JSON.stringify({gear:state.gear,cannon:state.cannon,mist:state.mist,ammo:state.ammo,ammoKinds:ammoKinds(state)}));}catch{}}updateHUD();sound(won?440:150,.5,'triangle',.05,won?440:-80);}
+function finish(won){if(state.ended)return;state.won=won;$('ending-note').textContent=won?(level.next?`Next: Chapter ${CHAPTERS[level.next].number} · ${CHAPTERS[level.next].name}`:'The colony is defeated · Marin’s home is hers again.'):'Retry begins at the start of this chapter.';if(won&&chapter===4){music.src='assets/marin-vs-the-colony.mp3';music.currentTime=0;}if(won)world.finishChapter();gesture.clear();state.ended=true;state.paused=true;syncMusic();firing=false;gesture.clear();keys.clear();if(document.pointerLockElement)document.exitPointerLock();$('ending').hidden=false;$('pause').hidden=true;$('ending-eyebrow').textContent=won?`CHAPTER ${level.number} COMPLETE`:'A MINOR SETBACK';$('ending-title').textContent=won?level.winTitle:'Back on your feet.';$('ending-copy').textContent=won?level.winCopy:chapter===4?'The queen held her ground. Watch the red warnings, strike during openings, and visit field supplies to recover. Your next attempt starts at the chamber entrance.':'The ants won this round. Try baiting workers away from their food, stomping for ammo, and visiting the tool bench to recover.';$('ending-stats').innerHTML=`<div><b>${chapter===4?(state.queen.mode==='dead'?3:state.queen.phase):state.secured}/3</b>${chapter===4?'phases beaten':'caches secured'}</div><div><b>${state.stomps}</b>stomps</div><div><b>${Math.floor(state.time/60)}:${String(Math.floor(state.time%60)).padStart(2,'0')}</b>time</div>`;$('next-chapter').hidden=!(won&&level.next);$('next-chapter').textContent=level.next?CHAPTERS[level.next].start+' ↗':'';$('replay').className=won&&level.next?'secondary':'primary';if(won&&level.next){try{localStorage.setItem(CHAPTERS[level.next].loadoutKey,JSON.stringify({gear:state.gear,cannon:state.cannon,mist:state.mist,ammo:state.ammo,ammoKinds:ammoKinds(state)}));}catch{}}updateHUD();sound(won?440:150,.5,'triangle',.05,won?440:-80);if(won&&chapter===4)beginCinematic();}
+
+function beginCinematic(replay=false){
+  state.cinematic=true;state.cinematicPaused=false;state.ride=null;
+  $('ending').hidden=true;$('hud').hidden=true;$('cinematic').hidden=false;$('cinematic-toggle').textContent='Pause film';
+  $('cinematic-caption').textContent='The queen has fallen.';view.root.setEnabled(false);landing.setEnabled(false);
+  for(const list of [projectiles,patches,clouds,particles]){for(const item of list)item.node?.setEnabled(false);}
+  for(const marker of world.markers)marker.beacon.setEnabled(false);
+  if(replay){world.finale.replay();music.currentTime=0;syncMusic();}
+  else{world.syncQueen(state.queen,clock,0);world.finale.start({q:state.queen,player,ants,camera,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches});}
+  $('cinematic-toggle').focus();
+}
+function toggleCinematic(){if(!state.cinematic)return;state.cinematicPaused=!state.cinematicPaused;$('cinematic-toggle').textContent=state.cinematicPaused?'Resume film':'Pause film';syncMusic();}
+function endCinematic(){
+  state.cinematic=false;state.cinematicPaused=false;$('cinematic').hidden=true;$('ending').hidden=false;$('victory-portrait').hidden=false;
+  $('replay-film').hidden=false;$('ending').classList.add('royal-victory');$('ending-eyebrow').textContent='LONG LIVE MARIN';$('ending-title').textContent='Her home. Her rules.';
+  $('ending-copy').textContent='The queen has fallen. The colony has scattered. Marin has a new crown—and absolutely no plans to share the house.';
+  $('replay').focus();syncMusic();
+}
+function advanceCinematic(dt){
+  if(!state.cinematic||state.cinematicPaused)return;
+  const beat=world.finale.step(dt);if($('cinematic').dataset.stage!==beat.stage){$('cinematic-caption').textContent=victoryCaption(beat.stage);$('cinematic').dataset.stage=beat.stage;if(beat.stage==='scatter')sound(100,.4,'triangle',.04,-45);if(beat.stage==='pickup')sound(620,.18,'triangle',.035,180);if(beat.stage==='celebrate')sound(440,.55,'triangle',.045,440);}
+  if(beat.done)endCinematic();
+}
+$('replay-film').onclick=()=>{if(state.won&&chapter===4)beginCinematic(true);};
+$('cinematic-toggle').onclick=toggleCinematic;
+$('cinematic-skip').onclick=()=>{if(state.cinematic){world.finale.skip();endCinematic();}};
 
 // A landing ring helps judge depth without moving the camera for the player.
 const landing=B.MeshBuilder.CreateTorus('landing aid',{diameter:3.2,thickness:.045,tessellation:32},scene);landing.material=world.M.lime;landing.setEnabled(false);
 function updateLanding(){landing.setEnabled(false);if(!$('assist').checked||state.ride)return;const ready=player.grounded?stompTarget(player,ants,camera.rotation.y):jumpTarget;for(const a of ready?[ready]:ants){if(a.state==='alive'&&a.type!=='flyer'&&distanceXZ(player,a)<3.6&&(player.grounded||player.y>a.y+.4)){landing.setEnabled(true);landing.position.set(a.x,a.y+.075,a.z);landing.scaling.setAll(a.type==='soldier'?1.8:1);break;}}}
 // Development hooks are opt-in; production play does not expose state mutation controls.
 if(new URLSearchParams(location.search).has('debug'))window.antagonized={state,player,ants,world,scene,camera,reset,hit,interact,primaryAction,dropBait,selectWeapon,updateHUD,pause,resume,
-  step(dt=1/60){updateTank(state,dt,attackHeld(keys));fireCooldown=Math.max(0,fireCooldown-dt);movePlayer(dt);updateAnts(dt);updateEggs();updateEffects(dt);updateQueen(dt);updateAim();updateHUD();},
+  step(dt=1/60){if(state.cinematic){advanceCinematic(dt);return;}if(state.ended)return;updateTank(state,dt,attackHeld(keys));fireCooldown=Math.max(0,fireCooldown-dt);movePlayer(dt);updateAnts(dt);updateEggs();updateEffects(dt);updateQueen(dt);updateAim();updateHUD();},
   effectsStep(dt=1/60){updateEffects(dt);},
   setKeys(...codes){keys.clear();codes.forEach(c=>keys.add(c));},
   teleport(x,y,z,yaw=Math.PI){Object.assign(player,{x,y,z,vy:0});camera.position.set(x,y+1.65,z);camera.rotation.set(0,yaw,0);},
@@ -384,7 +415,8 @@ let previous=performance.now();engine.runRenderLoop(()=>{
   const now=performance.now(),dt=Math.min((now-previous)/1000,.04);previous=now;
   if(!state.started){clock+=dt;camera.position.set(chapter>=3?2:chapter===2?10:17+Math.sin(clock*.1)*.3,chapter>=3?3.6:chapter===2?6:6.5,20);camera.setTarget(V(chapter>=3?0:-2,chapter>1?3:1.6,-2));}
   else if(!state.paused&&!state.ended){clock+=dt;state.time+=dt;state.invulnerable=Math.max(0,state.invulnerable-dt);fireCooldown=Math.max(0,fireCooldown-dt);if(lookMode==='drag'&&gesture.shouldHoldFire(performance.now()))firing=true;if(firing&&(state.weapon===1||state.ride||attackHeld(keys)||gesture.active))primaryAction();updateTank(state,dt,firing||attackHeld(keys));movePlayer(dt);updateAnts(dt);updateEggs();updateEffects(dt);updateQueen(dt);updateLanding();uiTick+=dt;if(uiTick>.1){updateAim();updateHUD();uiTick=0;}if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').classList.remove('visible');}}
-  world.animate(clock);if(state.queen)world.syncQueen(state.queen,clock,(!state.started||!state.paused&&!state.ended)?dt:0);scene.render();if(state.started)updateMarkers();
+  if(state.cinematic){advanceCinematic(dt);}
+  world.animate(clock);if(state.queen&&!state.won)world.syncQueen(state.queen,clock,(!state.started||!state.paused&&!state.ended)?dt:0);scene.render();if(state.started&&!state.ended)updateMarkers();
 });
 // A few live ant silhouettes make the title scene a view into the playable yard.
 spawnAnt('worker',2,10,0);spawnAnt('soldier',9,2,1);spawnAnt('flyer',-3,8,0);

@@ -40,8 +40,8 @@ export function buildWorld(scene,chapter=1) {
   function solid(x,y,z,w,h,d,m){const o=box('solid',x,y+h/2,z,w,h,d,m);colliders.push({x:x-w/2,z:z-d/2,w,d,top:y+h,bottom:y});return o;}
   function sign(text,x,y,z,width=2.3){const t=new B.DynamicTexture('label',{width:512,height:128},scene,false);t.hasAlpha=true;const ctx=t.getContext();ctx.fillStyle='#233f2c';ctx.fillRect(0,0,512,128);ctx.font='bold 37px sans-serif';ctx.fillStyle='#f2ebd2';ctx.textAlign='center';ctx.fillText(text,256,78);t.update();const m=new B.StandardMaterial('sign',scene);m.diffuseTexture=t;m.emissiveColor=new B.Color3(.15,.15,.12);m.specularColor=B.Color3.Black();const o=B.MeshBuilder.CreatePlane('sign',{width,height:width/4,sideOrientation:B.Mesh.DOUBLESIDE},scene);o.position.set(x,y,z);o.rotation.y=Math.PI;o.material=m;o.isPickable=false;return o;}
   function makeMarker(icon,label,pos,groundY=0){const el=document.createElement('div');el.className='marker';el.innerHTML=`<b>${icon}</b>${label}<small></small>`;document.querySelector('#markers').append(el);const beacon=new B.TransformNode('objective beacon',scene);beacon.position.set(pos.x,groundY+.05,pos.z);const ring=B.MeshBuilder.CreateTorus('objective pulse',{diameter:2.3,thickness:.04,tessellation:32},scene);ring.parent=beacon;ring.material=M.lime;ring.isPickable=false;const diamond=box('floating objective',0,pos.y-groundY-.55,0,.22,.22,.22,M.lime,beacon);diamond.rotation.z=Math.PI/4;const m={el,pos,beacon,ring,diamond,groundY,phase:markers.length*1.3};markers.push(m);return m;}
-  let supplyPoints=[],syncQueen=()=>{},eggSpawns=[],groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate=()=>{},finishChapter=()=>{},resetChapter=()=>{};
-  if(chapter===4){({supplyPoints,syncQueen,eggSpawns,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}));}
+  let supplyPoints=[],syncQueen=()=>{},finale=null,queenSlam=()=>{},eggSpawns=[],groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate=()=>{},finishChapter=()=>{},resetChapter=()=>{};
+  if(chapter===4){({supplyPoints,syncQueen,finale,queenSlam,eggSpawns,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}));}
   else if(chapter===3){({eggSpawns,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildWalls({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}));}
   else if(chapter===2){({groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildKitchen({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}));}
   else {
@@ -200,5 +200,5 @@ export function buildWorld(scene,chapter=1) {
     return {root,hands,held,heldEgg,gun,hopper,body,tip};
   }
 
-  return {supplyPoints,syncQueen,eggSpawns,makeEgg,finishChapter,resetChapter,animate,M,mat,box,ball,cyl,rod,colliders,groundSurfaces,caches,bench,clue,clueMarker,doorMarker,markers,gearPickup,makeAnt,squashAnt,makeViewModel};
+  return {supplyPoints,syncQueen,finale,queenSlam,eggSpawns,makeEgg,finishChapter,resetChapter,animate,M,mat,box,ball,cyl,rod,colliders,groundSurfaces,caches,bench,clue,clueMarker,doorMarker,markers,gearPickup,makeAnt,squashAnt,makeViewModel};
 }

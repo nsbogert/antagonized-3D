@@ -31,8 +31,8 @@ export function stepQueenMotion(m,q,dt,time){
   const windup=q.mode==='warn'&&q.attack==='slam'?Math.sin(clamp(1-q.timer/1.8,0,1)*Math.PI*.65):0;
   const impact=q.mode==='recover'&&q.attack==='slam'&&q.stagger<=0&&q.foam<=0?Math.exp(-m.age*7):0;
   const walking=clamp(speed/2,0,1),breath=Math.sin(time*1.7)*.035;
-  const height=breath+windup*.55-impact*.2+(q.mode==='warn'&&q.attack==='charge'?-.16:0)+Math.sin(m.travel*4)*.06*walking;
-  const pitch=-windup*.12+impact*.1+(q.mode==='charge'?.07:0)+(q.stagger>0?-.04:0);
+  const height=breath+windup*.85-impact*.25+(q.mode==='warn'&&q.attack==='charge'?-.16:0)+Math.sin(m.travel*4)*.06*walking;
+  const pitch=-windup*.2+impact*.1+(q.mode==='charge'?.07:0)+(q.stagger>0?-.04:0);
   const blend=1-Math.exp(-dt*12);m.height+=(height-m.height)*blend;m.pitch+=(pitch-m.pitch)*blend;
   m.roll+=(Math.sin(m.travel*2)*.025*walking-m.roll)*blend;
   const c=Math.cos(q.yaw),s=Math.sin(q.yaw);

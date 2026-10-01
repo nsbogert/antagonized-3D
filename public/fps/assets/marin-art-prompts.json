@@ -1,0 +1,13 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "file": "marin-victory.png",
+      "prompt": "Use case: identity-preserve. Asset type: victory portrait for Antagonized browser game. Use the attached approved Marin concept sheet as character likeness and rendering style reference. Produce ONE polished vertical full-body portrait of Marin, the smiling adult woman with warm brown chin-length side-parted bob, expressive friendly cartoon face. She wears the WHITE exterminator coveralls from the reference, brown work gloves and chunky brown boots, gray backpack sprayer with lime-green tank window and hose. She now wears a small golden six-point royal crown with a green jewel, slightly jaunty on her bob. She beams with a broad happy proud smile, one fist raised in celebration, the other hand resting on the sprayer wand pointing safely downward. Strong readable joyful pose, premium warm stylized 3D animated adventure look. Her entire crown and both boots are inside frame with generous margins. Simple soft cream and pale sage background with a few subtle golden celebratory sparkles. No text, no captions, no panels, no logos. Preserve Marin's facial likeness and outfit design from the reference; slightly cartoonish adult face, not a child. This celebrates victory over the ant queen."
+    },
+    {
+      "file": "marin-face.png",
+      "prompt": "Use case: identity-preserve. Asset type: front-projected face texture for a stylized 3D game character, square image. Reference image is the approved Marin design sheet; use the woman Marin's adult facial likeness, friendly wide smile, brown eyes, softly cartooned features. Generate ONLY Marin's face, perfectly frontal and bilaterally natural, orthographic projection, no perspective, no head tilt. Include eyebrows, expressive brown eyes, nose, cheeks, smiling mouth with teeth, forehead and chin. NO hair, NO ears, NO neck, NO clothes, NO crown, NO background. Oval face silhouette with a very soft feathered transparent edge. Warm natural lightly tanned skin, subtle freckles if appropriate, minimal flat diffuse lighting with no cast shadows or strong directional shading, no shiny highlights. The entire oval face fills 85 percent of square canvas width and 92 percent height. Face center aligned; eyebrows near 35 percent height, eyes at 43 percent, nose tip at 60 percent, smile at 74 percent. Render the features in the same polished friendly animated-family-adventure aesthetic as reference, clearly an adult woman. This is a texture to wrap onto a curved 3D face, not a character illustration. Transparent background."
+    }
+  ]
+}

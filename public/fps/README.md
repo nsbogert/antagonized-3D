@@ -224,3 +224,28 @@ offline Babylon NullEngine integration check: actual scene construction, egg
 projectiles, spray through every phase, mounted armor break, victory, restart,
 supply refills, and victory music. Attack timing and dodging are also covered
 by `queen-core.test.mjs`. The existing Playwright script covers Chapters 01–03.
+
+
+## Queen finale and Marin character
+
+The queen wears a gold crown throughout the battle. Defeating her starts an
+18-second in-engine sequence: she rolls over, her crown tumbles free, surviving
+ants panic and flee, and Marin walks over, collects the crown, puts it on and
+celebrates in her exterminator coveralls. The original theme accompanies the
+victory. The illustrated celebration screen appears after the sequence.
+Pause/resume or skip the film with its buttons; Escape toggles film pause.
+Switching away pauses the film. The ending has a Watch the finale again button.
+Retry resets the crown, character, camera, ant cast and normal gameplay.
+
+`queen-finale.mjs` stages the scene; `victory-core.mjs` defines the timeline.
+`marin-model.mjs` builds shaped garment meshes, articulated shoulder/elbow/hip/knee
+joints, a curved face mesh, a sculpted bob and detailed exterminator gear. The
+face uses a projected texture based on the approved character art. This remains
+a lightweight procedural character, rather than a production sculpted/skinned
+asset. Generated victory and face artwork are in `assets/marin-victory.png` and
+`assets/marin-face.png`; built-in image-generation prompts are preserved in
+`assets/marin-art-prompts.json`.
+
+The ground slam now has a more pronounced rear-up and an expanding visible
+shockwave at the warned target. Leave its red circle or jump at impact.
+The combat rules and damage window are unchanged.

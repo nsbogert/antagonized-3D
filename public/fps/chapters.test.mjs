@@ -32,7 +32,9 @@ test('upstairs ants and bait cannot block or lure across a floor',()=>{
 function kitchenLayout(builder=buildKitchen){
   const solids=[];const node=()=>({position:{set(){}},rotation:{},setEnabled(){}});
   class TransformNode{constructor(){Object.assign(this,node());}}
-  const B={TransformNode,Color3:class{},MeshBuilder:{CreateTube:node,CreateTorus:node}};
+  class Mesh{constructor(){Object.assign(this,node());}}
+  class VertexData{static ComputeNormals(){}applyToMesh(){}}
+  const B={TransformNode,Mesh,VertexData,Texture:class{},Color3:class{},MeshBuilder:{CreateTube:node,CreateTorus:node}};
   const M=new Proxy({}, {get:()=>({})});
   const result=builder({B,scene:{},V:(x,y,z)=>({x,y,z}),M,mat:()=>({}),box:node,ball:node,cyl:node,rod:node,
     solid:(x,y,z,w,h,d)=>{solids.push({x:x-w/2,z:z-d/2,w,d,top:y+h,bottom:y});return node();},

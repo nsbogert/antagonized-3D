@@ -58,9 +58,9 @@ Carry one object by hand or three in the cannon. Mouse look is optional.
 npm test
 ```
 
-Includes 61 rule/layout/motion checks and an offline Babylon NullEngine integration
+Includes 64 rule/layout/motion checks and an offline Babylon NullEngine integration
 check covering pre-battle ant movement, queen combat, projectiles, mounted charges, victory, restart,
-refills, and music. The integration check uses Node’s experimental VM-module
+refills, music, and the complete queen victory film (pause, skip, replay and restart). The integration check uses Node’s experimental VM-module
 flag and may print an experimental-feature notice.
 
 ## Files and assets

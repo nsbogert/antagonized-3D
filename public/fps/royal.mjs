@@ -1,3 +1,4 @@
+import {makeRoyalCrown,buildQueenFinale} from './queen-finale.mjs';
 import {createQueenMotion,stepQueenMotion} from './queen-motion.mjs';
 export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}){
   const earth=mat('royal earth','#3a302c'),floor=mat('royal clay','#74604d'),rootMat=mat('ancient roots','#4b3932');
@@ -62,7 +63,7 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
     rod('queen jaw',V(side*.95,1.8,3.1),V(side*1.6,1.3,4.3),.32,edge,body);
     rod('queen fang',V(side*1.6,1.3,4.3),V(side*.35,1.4,4.5),.21,resin,body);
   }
-  for(let i=-2;i<=2;i++)rod('royal crown spine',V(i*.4,3.3,2.1),V(i*.62,4.4-Math.abs(i)*.15,2.2),.18,resin,body);
+  const crown=makeRoyalCrown({B,scene,V,mat,ball,cyl,rod},body);
   const legs=[];
   for(const side of [-1,1])for(let i=0;i<3;i++){
     // Unit cylinders are repositioned and scaled; no geometry is rebuilt per frame.
@@ -84,6 +85,10 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   const ring=B.MeshBuilder.CreateTorus('slam warning edge',{diameter:8,thickness:.075,tessellation:48},scene);ring.material=warningEdge;ring.setEnabled(false);
   const lane=box('charge warning lane',0,.06,0,6.4,.04,1,warning,null,false);lane.setEnabled(false);
   const daylight=ball('daylight beyond roots',0,3,23.65,5,6,.1,M.cloud,null,false);daylight.setEnabled(false);
+  const finale=buildQueenFinale({B,scene,V,M,mat,box,ball,cyl,rod},{queen,body,crown,legs,getFeet:()=>motion.feet});
+  const shock=B.MeshBuilder.CreateTorus('queen slam shockwave',{diameter:1,thickness:.16,tessellation:48},scene);shock.material=warningEdge;shock.setEnabled(false);
+  let slamAt=null;
+  function queenSlam(point){shock.position.set(point.x,.12,point.z);slamAt=lastTime;shock.setEnabled(true);}
   let defeated=false;
   function syncQueen(q,time,dt=Math.max(0,Math.min(.04,time-lastTime))){
     lastTime=time;stepQueenMotion(motion,q,dt,time);
@@ -105,7 +110,7 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
       lane.position.set((q.from.x+q.target.x)/2,.08,(q.from.z+q.target.z)/2);lane.scaling.z=Math.hypot(dx,dz)+4;lane.rotation.y=Math.atan2(dx,dz);
     }
   }
-  return {eggSpawns,supplyPoints,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,syncQueen,
-    animate(){},finishChapter(){defeated=true;daylight.setEnabled(true);exitRoots.setEnabled(false);slam.setEnabled(false);ring.setEnabled(false);lane.setEnabled(false);},
-    resetChapter(){motion=createQueenMotion();lastTime=0;defeated=false;daylight.setEnabled(false);exitRoots.setEnabled(true);queen.rotation.z=0;}};
+  return {eggSpawns,supplyPoints,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,syncQueen,finale,queenSlam,
+    animate(time){if(slamAt!==null){const age=time-slamAt;shock.scaling.setAll(1+Math.min(1,age/.55)*7);shock.visibility=Math.max(0,1-age/.65);if(age>.65){shock.setEnabled(false);slamAt=null;}}},finishChapter(){defeated=true;shock.setEnabled(false);slamAt=null;daylight.setEnabled(true);exitRoots.setEnabled(false);slam.setEnabled(false);ring.setEnabled(false);lane.setEnabled(false);},
+    resetChapter(){finale.reset();shock.setEnabled(false);slamAt=null;motion=createQueenMotion();lastTime=0;defeated=false;daylight.setEnabled(false);exitRoots.setEnabled(true);queen.rotation.z=0;}};
 }
