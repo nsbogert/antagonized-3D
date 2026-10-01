@@ -1,0 +1,15 @@
+{
+  "name": "antagonized-3d",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Marin takes back her home in a four-chapter browser FPS.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test public/fps/*.test.mjs && node --experimental-vm-modules public/fps/tests/queen-runtime.cjs",
+    "test:rules": "node --test public/fps/*.test.mjs",
+    "test:queen": "node --experimental-vm-modules public/fps/tests/queen-runtime.cjs"
+  }
+}
