@@ -22,6 +22,21 @@ function mod(file){file=path.resolve(file);if(cache.has(file))return cache.get(f
   let front=0;for(let i=0;i<positions.length;i+=3)if(positions[i+2]>positions[front+2])front=i;
   assert.ok(normals[front+2]>0,name+' has outward-facing surfaces');
  }
+
+ // Slam effects retain the exact danger target, cancel warnings, and reuse a fixed pool.
+ g.reset();const slamQ=g.state.queen;Object.assign(slamQ,{mode:'warn',attack:'slam',timer:.7,target:{x:2,z:8}});
+ g.world.syncQueen(slamQ,1,.02);
+ const countdown=g.scene.getMeshByName('slam countdown');assert.ok(countdown.isEnabled());assert.equal(countdown.position.x,2);
+ slamQ.mode='recover';slamQ.foam=3;g.world.syncQueen(slamQ,1.02,.02);assert.equal(countdown.isEnabled(),false,'foam cancels telegraph');
+ const meshCount=g.scene.meshes.length;
+ g.world.queenSlam({x:2,z:8});g.world.animate(1.25);
+ const impact=g.scene.getTransformNodeByName('slam impact');assert.ok(impact.isEnabled());assert.equal(impact.position.z,8);
+ assert.ok(g.scene.getMeshByName('slam flying stone').position.y>.5,'debris rises above ground');
+ g.world.animate(4.1);assert.equal(impact.isEnabled(),false,'impact expires');
+ for(let i=0;i<8;i++){g.world.queenSlam({x:i,z:8});g.world.animate(1.3);}
+ assert.equal(g.scene.meshes.length,meshCount,'repeated slams allocate no new meshes');
+ g.world.resetChapter();assert.equal(impact.isEnabled(),false,'restart clears debris');
+
  g.reset();assert.equal(g.state.chapter,4);assert.equal(g.state.baits,1,'start with one bait');assert.equal(g.state.queen.mode,'dormant');assert.equal(g.world.eggSpawns.length,24);
  const initial=g.ants.map(a=>({x:a.x,z:a.z,type:a.type}));
  for(let i=0;i<80;i++)g.step(.02);

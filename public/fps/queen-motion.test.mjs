@@ -35,3 +35,12 @@ test('a full-arena charge keeps each leg within its joint reach at normal and sl
   }
  }
 });
+test('slam raises both forelegs, strikes before the ripple arrives, and can be interrupted',()=>{
+ const q=createQueen(),m=createQueenMotion();Object.assign(q,{mode:'warn',attack:'slam',timer:1.8});
+ let peak=0;
+ for(let t=0;t<1.79;t+=.02){q.timer=1.8-t;stepQueenMotion(m,q,.02,t);for(const f of m.feet.filter(f=>f.i===0))peak=Math.max(peak,f.ankle.y);}
+ assert.ok(peak>4,'forelegs clearly raised above her head');
+ assert.ok(m.feet.filter(f=>f.i===0).every(f=>f.ankle.y<.2),'feet strike before target damage');
+ q.timer=.7;stepQueenMotion(m,q,.02,2);q.mode='recover';q.foam=3;stepQueenMotion(m,q,.02,2.02);
+ assert.ok(m.feet.every(f=>f.ankle.y<.2),'interrupt removes the attack pose');
+});

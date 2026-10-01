@@ -1,3 +1,4 @@
+import {buildSlamEffects} from './slam-effects.mjs';
 import {makeRoyalCrown,buildQueenFinale} from './queen-finale.mjs';
 import {createQueenMotion,stepQueenMotion} from './queen-motion.mjs';
 export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}){
@@ -86,9 +87,8 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   const lane=box('charge warning lane',0,.06,0,6.4,.04,1,warning,null,false);lane.setEnabled(false);
   const daylight=ball('daylight beyond roots',0,3,23.65,5,6,.1,M.cloud,null,false);daylight.setEnabled(false);
   const finale=buildQueenFinale({B,scene,V,M,mat,box,ball,cyl,rod},{queen,body,crown,legs,getFeet:()=>motion.feet});
-  const shock=B.MeshBuilder.CreateTorus('queen slam shockwave',{diameter:1,thickness:.16,tessellation:48},scene);shock.material=warningEdge;shock.setEnabled(false);
-  let slamAt=null;
-  function queenSlam(point){shock.position.set(point.x,.12,point.z);slamAt=lastTime;shock.setEnabled(true);}
+  const slamEffects=buildSlamEffects({B,scene,V,mat,box,ball,rod});
+  function queenSlam(point){slamEffects.strike(point,lastTime);}
   let defeated=false;
   function syncQueen(q,time,dt=Math.max(0,Math.min(.04,time-lastTime))){
     lastTime=time;stepQueenMotion(motion,q,dt,time);
@@ -102,6 +102,7 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
       segment(leg.thigh,f.hip,f.knee);leg.knee.position.set(f.knee.x,f.knee.y,f.knee.z);segment(leg.shin,f.knee,f.ankle);
       segment(leg.claw,f.ankle,{x:f.ankle.x+f.side*.28,y:Math.max(.04,f.ankle.y-.04),z:f.ankle.z+.36});
     }
+    slamEffects.warning(q,time);
     const circle=q.mode==='warn'&&q.attack==='slam';slam.setEnabled(circle);ring.setEnabled(circle);
     lane.setEnabled(q.mode==='warn'&&q.attack==='charge');
     if(circle){slam.position.set(q.target.x,.07,q.target.z);ring.position.set(q.target.x,.1,q.target.z);ring.scaling.setAll(1+Math.sin(time*12)*.025);}
@@ -111,6 +112,6 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
     }
   }
   return {eggSpawns,supplyPoints,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,syncQueen,finale,queenSlam,
-    animate(time){if(slamAt!==null){const age=time-slamAt;shock.scaling.setAll(1+Math.min(1,age/.55)*7);shock.visibility=Math.max(0,1-age/.65);if(age>.65){shock.setEnabled(false);slamAt=null;}}},finishChapter(){defeated=true;shock.setEnabled(false);slamAt=null;daylight.setEnabled(true);exitRoots.setEnabled(false);slam.setEnabled(false);ring.setEnabled(false);lane.setEnabled(false);},
-    resetChapter(){finale.reset();shock.setEnabled(false);slamAt=null;motion=createQueenMotion();lastTime=0;defeated=false;daylight.setEnabled(false);exitRoots.setEnabled(true);queen.rotation.z=0;}};
+    animate(time){slamEffects.animate(time);},finishChapter(){defeated=true;slamEffects.reset();daylight.setEnabled(true);exitRoots.setEnabled(false);slam.setEnabled(false);ring.setEnabled(false);lane.setEnabled(false);},
+    resetChapter(){finale.reset();slamEffects.reset();motion=createQueenMotion();lastTime=0;defeated=false;daylight.setEnabled(false);exitRoots.setEnabled(true);queen.rotation.z=0;}};
 }

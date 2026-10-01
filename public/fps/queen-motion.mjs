@@ -28,12 +28,14 @@ export function stepQueenMotion(m,q,dt,time){
       m.group=1-m.group;
     }
   }
-  const windup=q.mode==='warn'&&q.attack==='slam'?Math.sin(clamp(1-q.timer/1.8,0,1)*Math.PI*.65):0;
+  const slamming=q.mode==='warn'&&q.attack==='slam';
+  const progress=slamming?clamp(1-q.timer/1.8,0,1):0;
+  const windup=slamming?(progress<.64?Math.sin(progress/.64*Math.PI/2):Math.max(0,1-(progress-.64)/.14)):0;
   const impact=q.mode==='recover'&&q.attack==='slam'&&q.stagger<=0&&q.foam<=0?Math.exp(-m.age*7):0;
   const walking=clamp(speed/2,0,1),breath=Math.sin(time*1.7)*.035;
-  const height=breath+windup*.85-impact*.25+(q.mode==='warn'&&q.attack==='charge'?-.16:0)+Math.sin(m.travel*4)*.06*walking;
-  const pitch=-windup*.2+impact*.1+(q.mode==='charge'?.07:0)+(q.stagger>0?-.04:0);
-  const blend=1-Math.exp(-dt*12);m.height+=(height-m.height)*blend;m.pitch+=(pitch-m.pitch)*blend;
+  const height=breath+windup*1.05-impact*.25+(q.mode==='warn'&&q.attack==='charge'?-.16:0)+Math.sin(m.travel*4)*.06*walking;
+  const pitch=-windup*.48+impact*.1+(q.mode==='charge'?.07:0)+(q.stagger>0?-.04:0);
+  const blend=1-Math.exp(-dt*(slamming&&progress>.64?32:12));m.height+=(height-m.height)*blend;m.pitch+=(pitch-m.pitch)*blend;
   m.roll+=(Math.sin(m.travel*2)*.025*walking-m.roll)*blend;
   const c=Math.cos(q.yaw),s=Math.sin(q.yaw);
   for(const f of m.feet){
@@ -46,6 +48,13 @@ export function stepQueenMotion(m,q,dt,time){
     const py=hy*cp-hz*sp;
     Object.assign(f.hip,{x:hx*cr-py*sr,y:hx*sr+py*cr+m.height,z:hy*sp+hz*cp});
     Object.assign(f.ankle,{x:c*(f.x-q.x)-s*(f.z-q.z),y:f.y,z:s*(f.x-q.x)+c*(f.z-q.z)});
+    // Raise both forelegs above the head, then hammer them into the floor.
+    // Keep stored stance coordinates intact for a clean return to walking.
+    if(f.i===0&&slamming){
+      f.ankle.x=f.ankle.x*(1-windup)+f.side*2.8*windup;
+      f.ankle.y+=windup*4.6;
+      f.ankle.z=f.ankle.z*(1-windup)+3.5*windup;
+    }
     const dx=f.ankle.x-f.hip.x,dy=f.ankle.y-f.hip.y,dz=f.ankle.z-f.hip.z,raw=Math.hypot(dx,dy,dz)||.001;
     const d=clamp(raw,.61,5.999),ux=dx/raw,uy=dy/raw,uz=dz/raw;
     // Bend knees outward and upward, rather than letting them flip through the body.
