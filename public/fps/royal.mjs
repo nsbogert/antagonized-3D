@@ -1,3 +1,4 @@
+import {createQueenMotion,stepQueenMotion} from './queen-motion.mjs';
 export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}){
   const earth=mat('royal earth','#3a302c'),floor=mat('royal clay','#74604d'),rootMat=mat('ancient roots','#4b3932');
   const resin=mat('royal amber','#ab7134',{glow:.12}),glow=mat('brood glow','#b0d994',{glow:.7});
@@ -47,28 +48,36 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   const caches=[{name:'WEST BROOD',x:-11,z:8},{name:'EAST BROOD',x:11,z:8},{name:'ROYAL BROOD',x:-7,z:-8}].map(c=>({...c,y:0,secured:false,lid:new B.TransformNode('brood lid',scene),marker:{el:{hidden:true}}}));
   const clue={x:0,y:0,z:-3},clueMarker={el:{hidden:true}},doorMarker={el:{hidden:true}};
   const queen=new B.TransformNode('THE QUEEN',scene);queen.position.set(0,0,-3);
-  const abdomen=ball('queen abdomen',0,2.1,-1.8,4.6,3.6,5.4,shell,queen);
-  ball('queen thorax',0,1.9,.6,2.8,2.6,3,shell,queen);
-  const weak=ball('exposed royal heart',0,1.55,2.05,2.1,1.5,1.7,soft,queen);
-  ball('queen head',0,2.5,2.4,2.8,2.5,2.3,shell,queen);
+  const body=new B.TransformNode('queen body',scene);body.parent=queen;
+  const abdomen=ball('queen abdomen',0,2.1,-1.8,4.6,3.6,5.4,shell,body);
+  ball('queen thorax',0,1.9,.6,2.8,2.6,3,shell,body);
+  const weak=ball('exposed royal heart',0,1.55,2.05,2.1,1.5,1.7,soft,body);
+  ball('queen head',0,2.5,2.4,2.8,2.5,2.3,shell,body);
   const plates=[];
-  for(let i=0;i<3;i++)plates.push(ball('breakable resin plate',0,2.65,-3+i*1.7,4.65,2.6,2.1,resin,queen));
+  for(let i=0;i<3;i++)plates.push(ball('breakable resin plate',0,2.65,-3+i*1.7,4.65,2.6,2.1,resin,body));
   for(const side of [-1,1]){
-    ball('queen luminous eye',side*1.04,2.9,3.26,.7,.55,.4,soft,queen);
-    rod('queen antenna',V(side*.8,3.4,2.8),V(side*1.9,5,3.3),.12,edge,queen);
-    rod('queen antenna tip',V(side*1.9,5,3.3),V(side*2.7,5.5,4.1),.09,edge,queen);
-    rod('queen jaw',V(side*.95,1.8,3.1),V(side*1.6,1.3,4.3),.32,edge,queen);
-    rod('queen fang',V(side*1.6,1.3,4.3),V(side*.35,1.4,4.5),.21,resin,queen);
+    ball('queen luminous eye',side*1.04,2.9,3.26,.7,.55,.4,soft,body);
+    rod('queen antenna',V(side*.8,3.4,2.8),V(side*1.9,5,3.3),.12,edge,body);
+    rod('queen antenna tip',V(side*1.9,5,3.3),V(side*2.7,5.5,4.1),.09,edge,body);
+    rod('queen jaw',V(side*.95,1.8,3.1),V(side*1.6,1.3,4.3),.32,edge,body);
+    rod('queen fang',V(side*1.6,1.3,4.3),V(side*.35,1.4,4.5),.21,resin,body);
   }
-  for(let i=-2;i<=2;i++)rod('royal crown spine',V(i*.4,3.3,2.1),V(i*.62,4.4-Math.abs(i)*.15,2.2),.18,resin,queen);
+  for(let i=-2;i<=2;i++)rod('royal crown spine',V(i*.4,3.3,2.1),V(i*.62,4.4-Math.abs(i)*.15,2.2),.18,resin,body);
   const legs=[];
   for(const side of [-1,1])for(let i=0;i<3;i++){
-    const pivot=new B.TransformNode('queen leg joint',scene);pivot.parent=queen;pivot.position.set(side*.85,1.65,1.3-i*1.6);
-    rod('queen armored thigh',V(),V(side*2,1,-.4),.34,shell,pivot);
-    ball('queen leg joint plate',side*2,1,-.4,.65,.65,.65,edge,pivot);
-    rod('queen shin',V(side*2,1,-.4),V(side*3.6,-1.45,.2),.23,edge,pivot);
-    rod('queen claw',V(side*3.6,-1.45,.2),V(side*4,-1.57,.8),.13,resin,pivot);
-    legs.push({pivot,i,side});
+    // Unit cylinders are repositioned and scaled; no geometry is rebuilt per frame.
+    const thigh=cyl('queen armored thigh',0,0,0,.34,1,shell,queen);
+    const knee=ball('queen leg joint plate',0,0,0,.65,.65,.65,edge,queen);
+    const shin=cyl('queen shin',0,0,0,.23,1,edge,queen);
+    const claw=cyl('queen claw',0,0,0,.13,1,resin,queen);
+    legs.push({thigh,knee,shin,claw});
+  }
+  let motion=createQueenMotion(),lastTime=0,direction;
+  function segment(mesh,a,b){
+    direction??=V();direction.set(b.x-a.x,b.y-a.y,b.z-a.z);
+    const length=direction.length();mesh.position.set((a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2);mesh.scaling.y=length;
+    direction.scaleInPlace(1/Math.max(.0001,length));mesh.rotationQuaternion??=new B.Quaternion();
+    B.Quaternion.FromUnitVectorsToRef(B.Axis.Y,direction,mesh.rotationQuaternion);
   }
   const foam=ball('queen foam coating',0,.9,1,3.8,1.8,4,M.foam,queen);foam.setEnabled(false);
   const slam=ball('slam warning area',0,.06,0,8,.035,8,warning,null,false);slam.setEnabled(false);
@@ -76,12 +85,18 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   const lane=box('charge warning lane',0,.06,0,6.4,.04,1,warning,null,false);lane.setEnabled(false);
   const daylight=ball('daylight beyond roots',0,3,23.65,5,6,.1,M.cloud,null,false);daylight.setEnabled(false);
   let defeated=false;
-  function syncQueen(q,time){
+  function syncQueen(q,time,dt=Math.max(0,Math.min(.04,time-lastTime))){
+    lastTime=time;stepQueenMotion(motion,q,dt,time);
+    body.position.y=motion.height;body.rotation.x=motion.pitch;body.rotation.z=motion.roll;
     queen.position.set(q.x,defeated?.15:0,q.z);queen.rotation.y=q.yaw;queen.rotation.z=defeated?1.35:0;
     const amount=Math.ceil(q.armor/3);plates.forEach((p,i)=>p.setEnabled(i<amount));
     weak.material=q.open>0?soft:shell;abdomen.material=q.hitFlash>0?edge:shell;
     foam.setEnabled(q.foam>0&&!defeated);
-    for(const leg of legs){leg.pivot.rotation.x=defeated?0:Math.sin(time*(q.mode==='charge'?14:3)+leg.i*2+leg.side)*.13;leg.pivot.rotation.z=q.mode==='warn'&&q.attack==='slam'?leg.side*-.25:0;}
+    for(let i=0;i<legs.length;i++){
+      const leg=legs[i],f=motion.feet[i];
+      segment(leg.thigh,f.hip,f.knee);leg.knee.position.set(f.knee.x,f.knee.y,f.knee.z);segment(leg.shin,f.knee,f.ankle);
+      segment(leg.claw,f.ankle,{x:f.ankle.x+f.side*.28,y:Math.max(.04,f.ankle.y-.04),z:f.ankle.z+.36});
+    }
     const circle=q.mode==='warn'&&q.attack==='slam';slam.setEnabled(circle);ring.setEnabled(circle);
     lane.setEnabled(q.mode==='warn'&&q.attack==='charge');
     if(circle){slam.position.set(q.target.x,.07,q.target.z);ring.position.set(q.target.x,.1,q.target.z);ring.scaling.setAll(1+Math.sin(time*12)*.025);}
@@ -92,5 +107,5 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   }
   return {eggSpawns,supplyPoints,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,syncQueen,
     animate(){},finishChapter(){defeated=true;daylight.setEnabled(true);exitRoots.setEnabled(false);slam.setEnabled(false);ring.setEnabled(false);lane.setEnabled(false);},
-    resetChapter(){defeated=false;daylight.setEnabled(false);exitRoots.setEnabled(true);queen.rotation.z=0;}};
+    resetChapter(){motion=createQueenMotion();lastTime=0;defeated=false;daylight.setEnabled(false);exitRoots.setEnabled(true);queen.rotation.z=0;}};
 }

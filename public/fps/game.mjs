@@ -158,6 +158,7 @@ function updateQueen(dt){
   for(const event of stepQueen(q,dt,player,repairs)){
     if(event==='hurt'){if(state.ride)dismount();hurt(true);}
     if(event==='awaken'){toast('The queen awakens. Bait her workers away and blast the resin armor.',5);sound(65,.7,'sawtooth',.045,45);}
+    if(event==='repair')toast('She is stopping for repairs. Bait her workers away!',3);
     if(event==='warning'){toast(queenHint(q),2);sound(q.attack==='slam'?95:160,.45,'triangle',.045,80);}
     if(event==='slam'){burst(V(player.x,.2,player.z),world.M.terra,16,5);sound(60,.5,'triangle',.06,-25);}
     if(event==='opening'&&q.phase===2)toast('She is exposed! Spray or throw now.',3);
@@ -285,7 +286,7 @@ function steerAnt(a,tx,tz,speed,dt){let dx=tx-a.x,dz=tz-a.z,dist=Math.hypot(dx,d
   a.x=clamp(nx,-22.5,22.5);a.z=clamp(nz,-12.5,22.5);a.root.rotation.y=Math.atan2(dx,dz);
 }
 function updateAnts(dt){
-  if(state.queen&&['dormant','intermission','dead'].includes(state.queen.mode))return;
+  if(state.queen?.mode==='dead')return;
   for(const a of ants){if(a.state==='collected')continue;a.attack=Math.max(0,a.attack-dt);a.foam=Math.max(0,a.foam-dt);
     if(a.state==='dead'){
       a.deadTime+=dt;const surface=surfaceHeightAt(a,a.corpseSurfaces||world.groundSurfaces);a.y=Math.max(surface,a.y-dt*3);
@@ -303,7 +304,13 @@ function updateAnts(dt){
       if(a.type==='worker'){
         const c=world.caches[a.cacheIndex];let tx,tz;
         if(bait){tx=bait.x+Math.cos(a.phase+clock*.5)*.6;tz=bait.z+Math.sin(a.phase+clock*.5)*.6;}
-        else if(state.queen){tx=state.queen.x+Math.cos(a.phase)*4;tz=state.queen.z+Math.sin(a.phase)*4;}
+        else if(state.queen){
+          const q=state.queen;
+          if(q.mode==='dormant'){
+            if(a.job==='food'){tx=c.x+Math.cos(a.phase)*1.5;tz=c.z+Math.sin(a.phase)*1.5;if(distanceXZ(a,{x:tx,z:tz})<.5){a.job='nest';a.carry=true;}}
+            else{tx=q.x+Math.cos(a.phase)*4;tz=q.z+Math.sin(a.phase)*4;if(distanceXZ(a,{x:tx,z:tz})<.5){a.job='food';a.carry=false;}}
+          }else{tx=q.x+Math.cos(a.phase+clock*.18)*4;tz=q.z+Math.sin(a.phase+clock*.18)*4;}
+        }
         else if(c.secured){tx=level.nest.x+Math.cos(clock*.12+a.phase)*3;tz=level.nest.z+1.5+Math.sin(clock*.12+a.phase)*2;}
         else if(a.job==='food'){tx=c.x+Math.cos(a.phase)*1.5;tz=c.z+Math.sin(a.phase)*1.5;if(distanceXZ(a,{x:tx,z:tz})<.4){a.job='nest';a.carry=true;}}
         else{tx=level.nest.x+Math.cos(a.phase)*2;tz=level.nest.z;if(distanceXZ(a,{x:tx,z:tz})<.5){a.job='food';a.carry=false;}}
@@ -377,7 +384,7 @@ let previous=performance.now();engine.runRenderLoop(()=>{
   const now=performance.now(),dt=Math.min((now-previous)/1000,.04);previous=now;
   if(!state.started){clock+=dt;camera.position.set(chapter>=3?2:chapter===2?10:17+Math.sin(clock*.1)*.3,chapter>=3?3.6:chapter===2?6:6.5,20);camera.setTarget(V(chapter>=3?0:-2,chapter>1?3:1.6,-2));}
   else if(!state.paused&&!state.ended){clock+=dt;state.time+=dt;state.invulnerable=Math.max(0,state.invulnerable-dt);fireCooldown=Math.max(0,fireCooldown-dt);if(lookMode==='drag'&&gesture.shouldHoldFire(performance.now()))firing=true;if(firing&&(state.weapon===1||state.ride||attackHeld(keys)||gesture.active))primaryAction();updateTank(state,dt,firing||attackHeld(keys));movePlayer(dt);updateAnts(dt);updateEggs();updateEffects(dt);updateQueen(dt);updateLanding();uiTick+=dt;if(uiTick>.1){updateAim();updateHUD();uiTick=0;}if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').classList.remove('visible');}}
-  world.animate(clock);if(state.queen)world.syncQueen(state.queen,clock);scene.render();if(state.started)updateMarkers();
+  world.animate(clock);if(state.queen)world.syncQueen(state.queen,clock,(!state.started||!state.paused&&!state.ended)?dt:0);scene.render();if(state.started)updateMarkers();
 });
 // A few live ant silhouettes make the title scene a view into the playable yard.
 spawnAnt('worker',2,10,0);spawnAnt('soldier',9,2,1);spawnAnt('flyer',-3,8,0);

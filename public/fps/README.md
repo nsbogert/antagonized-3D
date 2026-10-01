@@ -191,15 +191,18 @@ The HUD shows current / maximum bait, and the guide explains both refill routes.
 ## Chapter 04 · The Royal Chamber
 
 Continue from the royal seal in Chapter 03 or open `/fps/?chapter=4`.
-The queen waits until Marin crosses into the arena, leaving time to collect eggs
-and visit supplies. No food-cache or elevated-clue objective gates this fight.
+The queen begins fighting when Marin crosses into the arena, leaving time to collect eggs
+and visit supplies. Workers tend the brood and soldiers patrol before she awakens. No food-cache or elevated-clue objective gates this fight.
 
-- Crown: ants and eggs crack 6 resin armor. Workers nearby repair intact armor;
-  bait pulls them away. Armor breaks expose the queen for 12 seconds.
+- Crown: ants and eggs crack 6 resin armor. Nearby workers make her stop for up to three seconds to repair damaged armor;
+  bait pulls them away and ends the repair stop. Armor breaks expose the queen for 12 seconds.
 - Guard: 9 armor, 14-second openings. A mounted C charge breaks armor in one hit,
   while three cannon hits also work. Two flyers reinforce the guard.
-- Last charge: damage only during 8-second recovery windows or foam interruptions.
+- Last charge: damage only during 8-second openings after attacks or foam interruptions.
   Charges and slams have locked targets, red floor warnings, and generous windups.
+- She circles and pursues in every phase. Hits stagger her for 1.35 seconds, with a
+  five-second cooldown so sustained spray cannot immobilize her. Attack recovery
+  lasts 1.5 seconds; she keeps moving during the rest of the damage window.
 - Foam interrupts for 3 seconds with a 10-second cooldown. Spray damages exposed
   health; mist handles crowds and can damage the queen in an opening.
 - 24 eggs across eight clutches share the normal ammo inventory. Two E supply
@@ -210,7 +213,9 @@ and visit supplies. No food-cache or elevated-clue objective gates this fight.
 - Defeating the queen ends the game and reprises the original theme. Retry resets
   the encounter at the chamber entrance, without replaying earlier chapters.
 
-`royal.mjs` builds the arena and queen model. `queen-core.mjs` contains the
+`royal.mjs` builds the arena and queen model. `queen-motion.mjs` drives the
+alternating tripod gait, planted feet, articulated knees, and body windups.
+Charges accelerate and brake, turns are bounded, and phase changes preserve position. `queen-core.mjs` contains the
 independent phase, armor, attack, warning, and vulnerability rules. Chapter 04
 uses the supplied “The Queen Beneath” track (`assets/the-queen-beneath.mp3`).
 
