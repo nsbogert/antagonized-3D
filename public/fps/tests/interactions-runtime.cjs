@@ -36,6 +36,10 @@ function mod(file){file=path.resolve(file);if(cache.has(file))return cache.get(f
  assert.deepEqual(['worker','soldier','flyer'].map(type=>g.ants.filter(a=>a.type===type).length),populations[chapter],'chapter '+chapter+' starts with its intended population');
  for(const a of g.ants.filter(a=>a.type==='worker'))assert.ok(!g.world.colliders.some(c=>c.bottom<.6&&c.top>.22&&a.x>c.x-.65&&a.x<c.x+c.w+.65&&a.z>c.z-.65&&a.z<c.z+c.d+.65),'worker starts clear of furniture');
  if(useProps){assert.equal(await g.flyerReady,chapter>=3,'imported flyers load wherever they appear');assert.ok(g.ants.filter(a=>a.type==='flyer').every(a=>a.rig),'every chapter flyer uses its articulated model');}
+ g.updateHUD();
+ assert.equal(g.state.weapon,chapter===1?0:1,'only throw before backpack, otherwise default Spray');
+ assert.equal(g.state.cannon,chapter!==1,'backpack grants launcher without any kills');
+ if(chapter===1){assert.equal(g.state.gear,false);assert.equal((document.getElementById('weapons').innerHTML.match(/class="weapon-slot /g)||[]).length,1);assert.match(document.getElementById('weapons').innerHTML,/<b>3<\/b>THROW/);}
  g.step(.01);assert.equal(g.perspective,'third');assert.ok(g.camera.position.z>g.player.z,'every chapter starts with a chase camera');assert.equal(g.scene.getMeshByName('stomp boot'),null);assert.equal(g.scene.getMeshByName('denim leg'),null);
  // Household workers visibly deliver food to the exit and return for another load.
  const workers=g.ants.filter(a=>a.type==='worker'),cargo=workers.filter(a=>a.carry);
@@ -61,6 +65,7 @@ function mod(file){file=path.resolve(file);if(cache.has(file))return cache.get(f
  if(useProps){g.hero.update(g.player,g.state,g.camera.rotation,0);assert.equal(g.hero.rig.backpack.root.isEnabled(),chapter!==1,'backpack follows the starting gear loadout');}
  const bench=g.world.bench;
  g.state.health=2;g.state.tank=10;g.teleport(bench.x,0,bench.z);g.step(.01);
+ assert.equal(g.state.cannon,true,'first backpack pickup grants launcher immediately');assert.equal(g.state.kills,0);assert.equal(g.state.weapon,1,'backpack pickup selects Spray');
  assert.equal(g.state.health,5,'walk up restores health in chapter '+chapter);assert.equal(g.state.tank,100);assert.equal(g.state.gear,true);if(useProps){g.hero.update(g.player,g.state,g.camera.rotation,0);assert.equal(g.hero.rig.backpack.root.isEnabled(),true,'collecting gear equips backpack');g.state.weapon=0;g.hero.update(g.player,g.state,g.camera.rotation,0);assert.equal(g.hero.rig.backpack.root.isEnabled(),true,'switching to throwing keeps backpack');assert.ok(g.world.stations.every(a=>a.root.isEnabled()),'stations remain after picking up gear');}
  g.state.health=3;g.state.tank=45;for(let i=0;i<100;i++)g.step(.04);
  assert.equal(g.state.health,3,'standing at a station does not heal continuously');assert.equal(g.state.tank,45);
@@ -212,6 +217,34 @@ function mod(file){file=path.resolve(file);if(cache.has(file))return cache.get(f
   assert.equal(carry.gear,true);assert.equal(carry.cannon,true);assert.equal(carry.tank,23);assert.equal(Object.hasOwn(carry,'mist'),false);assert.equal(carry.ammo,2);assert.deepEqual(carry.ammoKinds,['egg','carcass']);
   const loadout=levels.chapterLoadout(destination,carry);assert.equal(loadout.tank,23);assert.equal(loadout.ammo,2);assert.deepEqual(loadout.ammoKinds,['egg','carcass']);
   let prevented=false;handlers.keydown({code:'Space',key:' ',repeat:false,preventDefault(){prevented=true;}});assert.equal(prevented,false,'completion controls retain keyboard activation');
+ }
+ // Actual mounted attacks kill other soldiers in three bites, preserving the mount.
+ if(chapter!==1){
+  g.reset();await new Promise(setImmediate);clearAnts();
+  if(g.state.queen)Object.assign(g.state.queen,{mode:'dormant',timer:3,target:null});
+  const soldiers=g.ants.filter(a=>a.type==='soldier'),mount=soldiers[0];
+  Object.assign(mount,{x:0,y:0,z:17,state:'alive',foam:14,subdued:0});
+  g.teleport(0,0,17,Math.PI);g.player.grounded=true;g.jumpAction();
+  assert.equal(g.state.ride,mount);
+  assert.equal(g.hit(mount,100,'bite'),'ignored','mount cannot kill itself');
+  for(const victim of soldiers.slice(1)){
+   Object.assign(victim,{x:0,y:0,z:15,state:'alive',foam:100,subdued:0,hp:3,mountedHits:0});
+   for(const kind of ['egg','carcass'])for(let i=0;i<6;i++)g.hit(victim,100,kind);
+   assert.equal(victim.hp,3,'projectiles do not damage soldier health');assert.notEqual(victim.state,'dead');
+   for(let i=0;i<3;i++){
+    g.step(.6);g.primaryAction();g.step(.01);
+    assert.equal(victim.mountedHits,i+1,'mounted attack '+(i+1));assert.equal(victim.hp,2-i);
+    assert.equal(victim.state,i===2?'dead':'subdued');
+   }
+   if(useProps)assert.equal(victim.rig.clip,'Defeat','dead soldier plays the defeat clip');
+   victim.x=-21;victim.z=-11;
+  }
+  assert.equal(soldiers.filter(a=>a.state!=='dead').length,1,'one soldier always survives');assert.equal(mount.state,'mounted');
+  g.jumpAction();g.state.weapon=0;g.state.ammo=0;g.state.ammoKinds=[];
+  const corpse=soldiers[1];g.teleport(corpse.x,0,corpse.z);g.step(.4);
+  assert.equal(g.state.ammo,0,'dead soldiers never become throwable ammunition');
+  assert.equal(g.hit(mount,100,'bite'),'ignored','unmounted attack cannot damage the last soldier');
+  g.reset();await new Promise(setImmediate);clearAnts();
  }
  g.reset();await new Promise(setImmediate);g.ants.forEach(a=>{a.foam=100;a.attack=100;});
  const levels=await import(path.join(fpsRoot,'chapters.mjs'));

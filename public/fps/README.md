@@ -44,9 +44,9 @@ site has its own timer; sealing it stops its reinforcements immediately. New cou
 leave through the exit after delivering their food. Clearing every enemy is not required.
 
 Stomping workers creates pickup ammunition. In throw/cannon mode, walking over carcasses loads them automatically; with spray/foam equipped they remain on the ground. Initially carry one worker; the cannon
-stores three. Collect the cannon at the tool bench after three enemy defeats.
+stores three and comes with the backpack immediately on pickup; no defeats are required.
 Thrown carcasses damage enemies and can knock flyers down; optional aim assistance
-helps compensate for the throwing arc. An intact soldier resists attacks. Foam it,
+helps compensate for the throwing arc. Three mounted bite attacks kill another soldier. Eggs and thrown or launched ants cannot kill soldiers; they can still subdue a foamed one. Dead soldiers cannot be picked up or thrown. Spray and unprepared stomps leave its armor intact. To ride one, foam it,
 then get close and press Space to mount it. The mount bites, charges
 workers, and climbs low vertical obstacles when walking into them. Its 40-second
 struggle timer ends in a dismount. Subdued soldiers recover after a delay.

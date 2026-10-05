@@ -31,7 +31,7 @@ export function consumeTank(state, cost) {
 
 export function collectGear(state) {
   const first=!state.gear;
-  state.gear=true; state.tank=100;
+  state.gear=true; state.cannon=true; state.tank=100;
   if(first) state.weapon=1;
   return first;
 }
@@ -44,6 +44,7 @@ export function segmentHitsSphere(start, end, center, radius) {
 }
 
 export const SOLDIER_FOAM_SECONDS = 14;
+export const SOLDIER_MOUNT_HITS = 3;
 export function applyFoam(ant) {
   if (ant.state !== 'alive') return 'ignored';
   ant.foam = Math.max(ant.foam || 0, ant.type === 'soldier' ? SOLDIER_FOAM_SECONDS : 7);
@@ -54,13 +55,19 @@ export function foamMovementScale(ant) {
 }
 
 export function damageAnt(ant, amount, kind) {
-  if (ant.state !== 'alive') return 'ignored';
+  const soldier=ant.type==='soldier';
+  if (ant.state !== 'alive' && !(soldier&&ant.state==='subdued'&&kind==='bite')) return 'ignored';
   if (kind === 'foam') return applyFoam(ant);
-  if (ant.type === 'soldier') {
-    if ((kind === 'stomp' || kind === 'carcass' || kind === 'egg') && ant.foam > 0) {
-      ant.state = 'subdued'; ant.subdued = 22; return 'subdued';
+  if (soldier) {
+    if (kind === 'bite') {
+      ant.mountedHits=(ant.mountedHits||0)+1;
+      ant.hp=Math.max(0,SOLDIER_MOUNT_HITS-ant.mountedHits);
+      if(ant.mountedHits>=SOLDIER_MOUNT_HITS){ant.state='dead';return 'killed';}
+      return 'hit';
     }
-    // An unprepared soldier cannot be accidentally killed and block the climbing route.
+    if ((kind === 'stomp' || kind === 'carcass' || kind === 'egg') && ant.foam > 0) {
+      ant.state='subdued';ant.subdued=22;return 'subdued';
+    }
     return 'armored';
   }
   ant.hp -= amount;

@@ -10,11 +10,12 @@ import {buildRoyal} from './royal.mjs';
 test('chapter selection falls back safely and kitchen carries only earned equipment',()=>{
   assert.equal(chapterNumber('2'),2);assert.equal(chapterNumber('99'),1);
   const loadout=chapterLoadout(2,{gear:true,cannon:false,mist:false,ammo:5});
-  assert.equal(loadout.ammo,1);assert.equal(loadout.cannon,false);
+  assert.equal(loadout.ammo,3);assert.equal(loadout.cannon,true,'older backpack saves include the launcher');
   assert.equal(loadout.weapon,1);assert.equal(loadout.tank,100);
   assert.equal(Object.hasOwn(chapterLoadout(2,{gear:false,cannon:false,mist:true}),'mist'),false);
   assert.equal(chapterLoadout(1,{gear:true,cannon:true}).gear,false);
   assert.equal(chapterLoadout(2).ammo,3);
+  assert.equal(chapterLoadout(2,{gear:false,cannon:true,ammo:3}).cannon,false,'no backpack means no launcher');
   for(const chapter of [2,3,4,5]){
     assert.equal(chapterLoadout(chapter).weapon,1,'direct entry defaults to spray');
     assert.equal(chapterLoadout(chapter,{gear:true,cannon:true,ammo:3}).weapon,1,'carried launcher does not override default spray');
@@ -99,7 +100,7 @@ test('mixed ammo survives chapter transfer without reusing the saved queue',()=>
   const loadout=chapterLoadout(4,saved);assert.deepEqual(loadout.ammoKinds,saved.ammoKinds);
   loadout.ammoKinds.shift();assert.equal(saved.ammoKinds.length,3);
   assert.deepEqual(chapterLoadout(2,{cannon:false,ammo:3,ammoKinds:['egg','egg','egg']}).ammoKinds,['egg']);
-  assert.deepEqual(chapterLoadout(4,{cannon:true,ammo:2}).ammoKinds,['carcass','carcass']);
+  assert.deepEqual(chapterLoadout(4,{gear:true,cannon:true,ammo:2}).ammoKinds,['carcass','carcass']);
 });
 test('all colony egg clutches are accessible on foot and outside obstacles',()=>{
   const world=kitchenLayout(buildWalls),start=CHAPTERS[4].spawn;

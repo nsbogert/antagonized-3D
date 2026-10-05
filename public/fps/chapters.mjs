@@ -69,7 +69,7 @@ export function chapterNumber(value){return Object.hasOwn(CHAPTERS,Number(value)
 export function chapterLoadout(chapter,saved=null){
   if(chapter===1)return {gear:false,cannon:false,ammo:0,ammoKinds:[],weapon:0,tank:0};
   const source=saved&&typeof saved==='object'?saved:{gear:true,cannon:true,ammo:3};
-  const gear=source.gear===true,cannon=source.cannon===true;
+  const gear=source.gear===true,cannon=gear;
   const ammo=Math.max(0,Math.min(cannon?3:1,Math.floor(Number(source.ammo)||0)));
   const ammoKinds=Array.from({length:ammo},(_,i)=>source.ammoKinds?.[i]==='egg'?'egg':'carcass');
   const tank=gear?(Number.isFinite(source.tank)?Math.max(0,Math.min(100,source.tank)):100):0;

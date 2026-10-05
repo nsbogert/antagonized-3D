@@ -78,7 +78,7 @@ test('jump assistance prefers nearby workers and prepared soldiers, not flyers o
 test('kit pickup is loaded, while station refills preserve the selected tool',()=>{
   const s={gear:false,tank:0,weapon:0};
   assert.equal(consumeTank(s,SPRAY.cost),false);assert.equal(s.tank,0);
-  assert.equal(collectGear(s),true);assert.equal(s.tank,100);assert.equal(s.weapon,1);
+  assert.equal(collectGear(s),true);assert.equal(s.tank,100);assert.equal(s.weapon,1);assert.equal(s.cannon,true,'backpack includes launcher without kills');
   s.weapon=2;s.tank=10;assert.equal(collectGear(s),false);
   assert.equal(s.tank,100);assert.equal(s.weapon,2);
 });
@@ -172,4 +172,24 @@ test('eggs defeat workers and flyers but only subdue a soldier after foam',()=>{
   const soldier={type:'soldier',state:'alive',hp:10,foam:0};
   assert.equal(damageAnt(soldier,3,'egg'),'armored');applyFoam(soldier);
   assert.equal(damageAnt(soldier,3,'egg'),'subdued');assert.equal(soldier.subdued,22);
+});
+
+test('three mounted bites kill a soldier, while eggs and ants never damage its health',()=>{
+  for(const state of ['alive','subdued']){
+    const a={type:'soldier',state,foam:0,hp:3,mountedHits:0};
+    for(let i=0;i<12;i++)for(const kind of ['egg','carcass','spray','stomp','charge'])damageAnt(a,100,kind);
+    assert.equal(a.hp,3);assert.equal(a.mountedHits,0);assert.equal(a.state,state);
+    for(let i=0;i<3;i++){
+      assert.equal(damageAnt(a,100,'bite'),i===2?'killed':'hit');
+      assert.equal(a.mountedHits,i+1);assert.equal(a.hp,2-i);
+      assert.equal(a.state,i===2?'dead':state);
+    }
+    assert.equal(damageAnt(a,100,'bite'),'ignored');assert.equal(a.mountedHits,3);
+    assert.equal(canAutoCollect({weapon:0,cannon:true,ammo:0,ride:null},{x:0,y:0,z:0},{...a,x:0,y:0,z:0}),false,'dead soldiers never become ammunition');
+  }
+});
+test('foamed soldiers remain alive after repeated ant and egg impacts',()=>{
+ const a={type:'soldier',state:'alive',foam:14,hp:3};
+ for(let i=0;i<12;i++)for(const kind of ['egg','carcass'])damageAnt(a,100,kind);
+ assert.equal(a.state,'subdued');assert.equal(a.hp,3);assert.equal(a.mountedHits,undefined);
 });

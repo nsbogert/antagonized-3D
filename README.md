@@ -57,7 +57,7 @@ a chapter is not saved; retry begins at its entrance.
 | Escape | Pause |
 
 Walk over carcasses and eggs while using throw/Ant Launcher mode to collect them.
-Carry one object by hand or three in the Ant Launcher. Mouse look is optional.
+Before collecting the backpack, Marin can only carry and throw one ant. The backpack includes Spray (1), Foam (2), and the three-round Ant Launcher (3), and selects Spray on pickup. Three attacks from a ridden soldier kill another soldier; eggs and thrown ants cannot kill soldiers. Soldiers can never be collected or thrown. Mouse look is optional.
 
 ## Tests
 
