@@ -1,8 +1,11 @@
-export function buildWalls({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}){
+export function buildWalls({B,scene,V,M,mat,surface,box,ball,cyl,rod,solid,sign,makeMarker}){
   const earth=mat('tunnel earth','#655242'),rock=mat('tunnel rock','#7e7057'),floor=mat('packed clay','#9b896b');
   const timber=mat('wall studs','#ac8157'),copper=mat('old pipes','#ba794c'),resin=mat('amber resin','#d4a649',{glow:.2});
   const glow=mat('colony glow','#badd9a',{glow:.65}),lamp=mat('work lamp','#ffdc8b',{glow:1});
-  earth.diffuseTexture=M.soil.diffuseTexture;timber.diffuseTexture=M.wood.diffuseTexture;
+  surface(earth,'earth',{base:'#635343',meters:4.2,seed:73,bump:1});
+  surface(rock,'rock',{base:'#807461',meters:3.2,seed:81,bump:1});
+  surface(floor,'clay',{base:'#95856a',meters:4.4,seed:52,bump:.85,shine:.035});
+  surface(timber,'wood',{base:'#a07a51',meters:1.6,seed:11});
   const groundSurfaces=[{x:-24,z:-14,w:48,d:38,top:.02}];
   box('packed-earth floor',0,-.14,5,48,.3,38,floor);
   solid(-24,0,5,1,11,40,earth);solid(24,0,5,1,11,40,earth);solid(0,0,-14,48,11,1,earth);solid(0,0,24,48,11,1,earth);
@@ -34,7 +37,7 @@ export function buildWalls({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   }
   for(let i=0;i<36;i++)ball('trail grain',(rand()-.5)*8,.08,20-i*.9,.12,.08,.16,resin);
   sign('BEHIND THE WALLS',0,7,21.9,6);
-  box('kitchen breach',0,2.2,23.4,5,4.4,.12,M.black);for(const x of [-2.8,2.8])box('broken plaster edge',x,2,23.25,.4,4.6,.4,M.cream);
+  box('bathroom plumbing breach',0,2.2,23.4,5,4.4,.12,M.black);for(const x of [-2.8,2.8])box('broken plaster edge',x,2,23.25,.4,4.6,.4,M.cream);
   // An abandoned tool case is the safe resupply point near the entrance.
   const bench={x:9,y:0,z:16},gearPickup=new B.TransformNode('colony supplies',scene);
   solid(10,0,18,4,1.1,2,M.metal);box('toolcase lid',10,1.17,18,4.1,.14,2.1,timber);

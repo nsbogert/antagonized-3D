@@ -1,10 +1,16 @@
+import {createSurfaceLibrary,mapBoxSurface} from './surfaces.mjs';
+import {loadPropFactory} from './props.mjs';
 import {buildRoyal} from './royal.mjs';
 import {buildWalls} from './walls.mjs';
 import {buildKitchen} from './kitchen.mjs';
+import {buildBathroom} from './bathroom.mjs';
+import {CHAPTERS} from './chapters.mjs';
 const B = window.BABYLON;
 export const V = (x=0,y=0,z=0) => new B.Vector3(x,y,z);
 export function buildWorld(scene,chapter=1) {
+  const place=CHAPTERS[chapter]?.place||'backyard',isRoyal=place==='royal chamber',isWalls=place==='walls';
   const materials = {};
+  const surface=createSurfaceLibrary(B,scene);
   function mat(name,color,options={}) {
     if (materials[name]) return materials[name];
     const m = new B.StandardMaterial(name,scene);
@@ -13,37 +19,37 @@ export function buildWorld(scene,chapter=1) {
     if(options.glow) m.emissiveColor=m.diffuseColor.scale(options.glow);
     materials[name]=m; return m;
   }
-  const M={grass:mat('grass','#789956'),grassDark:mat('grassDark','#5d8045'),grassLight:mat('grassLight','#8eac62'),stone:mat('stone','#ddd1b1'),stoneSide:mat('stoneSide','#b9ad91'),soil:mat('soil','#574c37'),wood:mat('wood','#b78858'),woodDark:mat('woodDark','#725239'),cream:mat('cream','#f3e6c6'),white:mat('white','#eee9d7'),cloud:mat('cloud','#edf1dd',{glow:.8}),house:mat('house','#abc3ad'),roof:mat('roof','#455b58'),glass:mat('glass','#709ca1'),leaf:mat('leaf','#4e7842'),leafLight:mat('leafLight','#8ba45b'),terra:mat('terra','#bf7450'),terraLight:mat('terraLight','#d39264'),yellow:mat('yellow','#efca64'),pink:mat('pink','#da9a9a'),purple:mat('purple','#9c90ad'),metal:mat('metal','#53645a'),lime:mat('lime','#d7e783',{glow:.15}),black:mat('black','#272f28'),worker:mat('worker','#342d25'),soldier:mat('soldier','#984229'),eye:mat('eye','#111a17'),blue:mat('blue','#486e93'),glove:mat('glove','#67523a'),skin:mat('skin','#d7a078'),foam:mat('foam','#bde4e1'),mist:mat('mist','#c2db75',{alpha:.18,glow:.3}),shadow:mat('shadow','#273927',{alpha:.16})};
+  const M={grass:mat('grass','#789956'),grassDark:mat('grassDark','#5d8045'),grassLight:mat('grassLight','#8eac62'),stone:mat('stone','#ddd1b1'),stoneSide:mat('stoneSide','#b9ad91'),soil:mat('soil','#574c37'),wood:mat('wood','#b78858'),woodDark:mat('woodDark','#725239'),cream:mat('cream','#f3e6c6'),white:mat('white','#eee9d7'),cloud:mat('cloud','#edf1dd',{glow:.8}),house:mat('house','#abc3ad'),roof:mat('roof','#455b58'),glass:mat('glass','#709ca1'),leaf:mat('leaf','#4e7842'),leafLight:mat('leafLight','#8ba45b'),terra:mat('terra','#bf7450'),terraLight:mat('terraLight','#d39264'),yellow:mat('yellow','#efca64'),pink:mat('pink','#da9a9a'),purple:mat('purple','#9c90ad'),metal:mat('metal','#53645a'),lime:mat('lime','#d7e783',{glow:.15}),black:mat('black','#272f28'),worker:mat('worker','#342d25'),soldier:mat('soldier','#984229'),eye:mat('eye','#111a17'),blue:mat('blue','#486e93'),glove:mat('glove','#67523a'),skin:mat('skin','#d7a078'),foam:mat('foam','#bde4e1'),shadow:mat('shadow','#273927',{alpha:.16})};
   M.egg=mat('pearl egg shell','#e5ebbc',{glow:.22});M.egg.specularColor=new B.Color3(.6,.7,.4);M.egg.specularPower=65;
   M.chitin=mat('chitin seams','#251f19');M.shellHighlight=mat('shell highlight','#61513b');
   M.wing=mat('wing membrane','#d7e9d4',{alpha:.52,glow:.18});M.vein=mat('wing veins','#8ba29c');
   M.worker.specularColor=new B.Color3(.45,.38,.26);M.worker.specularPower=75;
   M.soldier.specularColor=new B.Color3(.5,.3,.17);M.soldier.specularPower=65;
   M.eye.specularColor=new B.Color3(.9,.9,.9);M.eye.specularPower=110;
-  let textureSeed=417;
-  const trand=()=>{textureSeed=(textureSeed*16807)%2147483647;return(textureSeed-1)/2147483646;};
-  function surfaceTexture(name,base,kind,repeat=1){
-    const texture=new B.DynamicTexture(name,{width:512,height:512},scene,true);const ctx=texture.getContext();ctx.fillStyle=base;ctx.fillRect(0,0,512,512);
-    for(let i=0;i<6500;i++){const x=trand()*512,y=trand()*512;ctx.fillStyle=trand()>.5?'rgba(255,244,203,.07)':'rgba(24,42,20,.065)';ctx.fillRect(x,y,1+trand()*4,kind==='wood'?25+trand()*100:1+trand()*5);}
-    if(kind==='grass'){for(let i=0;i<3000;i++){const x=trand()*512,y=trand()*512;ctx.strokeStyle=trand()>.45?'rgba(54,82,37,.25)':'rgba(189,199,117,.25)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+trand()*4-2,y-2-trand()*7);ctx.stroke();}}
-    if(kind==='stone'){for(let i=0;i<40;i++){ctx.fillStyle='rgba(225,217,188,.18)';ctx.beginPath();ctx.ellipse(trand()*512,trand()*512,15+trand()*35,8+trand()*24,trand()*3,0,Math.PI*2);ctx.fill();}}
-    if(kind==='wood'){for(let y=0;y<512;y+=64){ctx.fillStyle='rgba(34,25,12,.16)';ctx.fillRect(0,y,512,2);}}
-    texture.update();texture.uScale=texture.vScale=repeat;return texture;
+  surface(M.wood,'wood',{base:'#b58a5d',meters:1.6});
+  surface(M.soil,'earth',{base:'#65533b',meters:3.6});
+  if(chapter===1){
+    surface(M.grass,'grass',{base:'#7e9656',meters:3.2,shine:.015,bump:.4});
+    surface(M.stone,'stone',{base:'#cfc2a5',meters:3.8});
+    surface(M.stoneSide,'stone',{base:'#aa9c80',meters:3.8});
+    surface(M.house,'paint',{base:'#a4b8a2',meters:1.8,shine:.035,bump:.3});
+    surface(M.roof,'rock',{base:'#526465',meters:2.8});
+    M.fence=surface(mat('painted timber fence','#ede1c8'),'wood',{base:'#e8dec8',meters:1.6,bump:.4,shine:.04});
   }
-  for(const [material,base,kind,repeat] of [[M.grass,'#80995d','grass',18],[M.stone,'#d3c5a5','stone',5],[M.wood,'#b58a5d','wood',2],[M.soil,'#65533b','soil',3],[M.roof,'#526465','stone',8]]){material.diffuseTexture=surfaceTexture(material.name+' detail',base,kind,repeat);material.diffuseColor=B.Color3.White();}
   const shadowTex=new B.DynamicTexture('soft ant shadow',{width:64,height:64},scene,false);const sc=shadowTex.getContext(),sg=sc.createRadialGradient(32,32,4,32,32,32);sg.addColorStop(0,'rgba(13,28,14,.7)');sg.addColorStop(1,'rgba(13,28,14,0)');sc.fillStyle=sg;sc.fillRect(0,0,64,64);shadowTex.hasAlpha=true;shadowTex.update();M.shadow.diffuseTexture=shadowTex;M.shadow.useAlphaFromDiffuseTexture=true;M.shadow.alpha=.5;M.shadow.disableLighting=true;M.shadow.emissiveColor=B.Color3.White();
   const statics=[],colliders=[],markers=[];
-  function box(name,x,y,z,w,h,d,m,parent=null,merge=true) {const o=B.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);o.position.set(x,y,z);o.material=m;o.parent=parent;o.isPickable=false;if(!parent&&merge)statics.push(o);return o;}
+  function box(name,x,y,z,w,h,d,m,parent=null,merge=true) {const o=B.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);o.position.set(x,y,z);o.material=m;o.parent=parent;o.isPickable=false;mapBoxSurface(B,o,x,y,z,m);if(!parent&&merge)statics.push(o);return o;}
   function ball(name,x,y,z,sx,sy,sz,m,parent=null,merge=true) {const o=B.MeshBuilder.CreateSphere(name,{diameter:1,segments:16},scene);o.position.set(x,y,z);o.scaling.set(sx,sy,sz);o.material=m;o.parent=parent;o.isPickable=false;if(!parent&&merge)statics.push(o);return o;}
   function cyl(name,x,y,z,diam,h,m,parent=null,top=diam,merge=true){const o=B.MeshBuilder.CreateCylinder(name,{diameterBottom:diam,diameterTop:top,height:h,tessellation:12},scene);o.position.set(x,y,z);o.material=m;o.parent=parent;o.isPickable=false;if(!parent&&merge)statics.push(o);return o;}
   function rod(name,a,b,r,m,parent=null,merge=true){const mid=a.add(b).scale(.5);const o=cyl(name,mid.x,mid.y,mid.z,r,B.Vector3.Distance(a,b),m,parent,r,merge);o.rotationQuaternion=B.Quaternion.FromUnitVectorsToRef(B.Axis.Y,b.subtract(a).normalize(),new B.Quaternion());return o;}
   function solid(x,y,z,w,h,d,m){const o=box('solid',x,y+h/2,z,w,h,d,m);colliders.push({x:x-w/2,z:z-d/2,w,d,top:y+h,bottom:y});return o;}
-  function sign(text,x,y,z,width=2.3){const t=new B.DynamicTexture('label',{width:512,height:128},scene,false);t.hasAlpha=true;const ctx=t.getContext();ctx.fillStyle='#233f2c';ctx.fillRect(0,0,512,128);ctx.font='bold 37px sans-serif';ctx.fillStyle='#f2ebd2';ctx.textAlign='center';ctx.fillText(text,256,78);t.update();const m=new B.StandardMaterial('sign',scene);m.diffuseTexture=t;m.emissiveColor=new B.Color3(.15,.15,.12);m.specularColor=B.Color3.Black();const o=B.MeshBuilder.CreatePlane('sign',{width,height:width/4,sideOrientation:B.Mesh.DOUBLESIDE},scene);o.position.set(x,y,z);o.rotation.y=Math.PI;o.material=m;o.isPickable=false;return o;}
+  function sign(text,x,y,z,width=2.3){const t=new B.DynamicTexture('label',{width:512,height:128},scene,false);t.hasAlpha=true;const ctx=t.getContext();ctx.fillStyle='#233f2c';ctx.fillRect(0,0,512,128);ctx.font='bold 37px sans-serif';const textWidth=ctx.measureText(text).width;const fontSize=Math.min(37,Math.floor(37*464/Math.max(1,textWidth)));ctx.font=`bold ${fontSize}px sans-serif`;ctx.fillStyle='#f2ebd2';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,64);t.update();const m=new B.StandardMaterial('sign',scene);m.diffuseTexture=t;m.emissiveColor=new B.Color3(.15,.15,.12);m.specularColor=B.Color3.Black();const o=B.MeshBuilder.CreatePlane('sign',{width,height:width/4,sideOrientation:B.Mesh.DOUBLESIDE},scene);o.position.set(x,y,z);o.rotation.y=Math.PI;o.material=m;o.isPickable=false;return o;}
   function makeMarker(icon,label,pos,groundY=0){const el=document.createElement('div');el.className='marker';el.innerHTML=`<b>${icon}</b>${label}<small></small>`;document.querySelector('#markers').append(el);const beacon=new B.TransformNode('objective beacon',scene);beacon.position.set(pos.x,groundY+.05,pos.z);const ring=B.MeshBuilder.CreateTorus('objective pulse',{diameter:2.3,thickness:.04,tessellation:32},scene);ring.parent=beacon;ring.material=M.lime;ring.isPickable=false;const diamond=box('floating objective',0,pos.y-groundY-.55,0,.22,.22,.22,M.lime,beacon);diamond.rotation.z=Math.PI/4;const m={el,pos,beacon,ring,diamond,groundY,phase:markers.length*1.3};markers.push(m);return m;}
-  let supplyPoints=[],syncQueen=()=>{},finale=null,queenSlam=()=>{},eggSpawns=[],groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate=()=>{},finishChapter=()=>{},resetChapter=()=>{};
-  if(chapter===4){({supplyPoints,syncQueen,finale,queenSlam,eggSpawns,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}));}
-  else if(chapter===3){({eggSpawns,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildWalls({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}));}
-  else if(chapter===2){({groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildKitchen({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}));}
+  let fixtureReady=Promise.resolve(true),waterAt=()=>null,updateWater=()=>{},supplyPoints=[],syncQueen=()=>{},finale=null,queenSlam=()=>{},eggSpawns=[],groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate=()=>{},finishChapter=()=>{},resetChapter=()=>{};
+  if(isRoyal){({supplyPoints,syncQueen,finale,queenSlam,eggSpawns,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildRoyal({B,scene,V,M,mat,surface,box,ball,cyl,rod,solid,sign,makeMarker}));}
+  else if(isWalls){({eggSpawns,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildWalls({B,scene,V,M,mat,surface,box,ball,cyl,rod,solid,sign,makeMarker}));}
+  else if(place==='bathroom'){({fixtureReady,waterAt,updateWater,finishChapter,resetChapter,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildBathroom({B,scene,V,M,mat,surface,box,ball,cyl,rod,solid,sign,makeMarker}));}
+  else if(chapter===2){({groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,animate}=buildKitchen({B,scene,V,M,mat,surface,box,ball,cyl,rod,solid,sign,makeMarker}));}
   else {
   // Heights of visible ground surfaces, including paving without movement colliders.
   groundSurfaces=[{x:-23,z:-15.5,w:46,d:17,top:.035}];
@@ -54,7 +60,7 @@ export function buildWorld(scene,chapter=1) {
   for(let i=0;i<9;i++){const x=Math.sin(i*.7)*1.5;const o=cyl('garden stepping stone',x,.04,19-i*2.1,2,.13,M.stone);o.scaling.set(1.2,1,.75);o.rotation.y=Math.sin(i)*.18;groundSurfaces.push({x,z:19-i*2.1,rx:1.2,rz:.75,angle:o.rotation.y,top:.105});}
   let seed=19;function rand(){seed=(seed*16807)%2147483647;return(seed-1)/2147483646;}
   // Fence encloses the play space. Broad surfaces and repeated details share materials.
-  for(let i=-24;i<=24;i+=1.15){for(const side of [-1,1]){box('fence picket',side*24,1.35,i,.18,2.7,.94,M.cream);const cap=box('picket cap',side*24,2.74,i,.19,.36,.66,M.cream);cap.rotation.x=Math.PI/4;}box('fence picket',i,1.35,24,.94,2.7,.18,M.cream);}
+  for(let i=-24;i<=24;i+=1.15){for(const side of [-1,1]){box('fence picket',side*24,1.35,i,.18,2.7,.94,M.fence);const cap=box('picket cap',side*24,2.74,i,.19,.36,.66,M.fence);cap.rotation.x=Math.PI/4;}box('fence picket',i,1.35,24,.94,2.7,.18,M.fence);}
   for(const side of [-1,1]){box('fence rail',side*23.8,.8,0,.16,.15,48,M.wood);box('fence rail',side*23.8,2.1,0,.16,.15,48,M.wood);}box('fence rail',0,1.8,23.8,48,.15,.16,M.wood);
   // House and welcoming porch.
   solid(0,0,-19,32,8,10,M.house);
@@ -69,7 +75,7 @@ export function buildWorld(scene,chapter=1) {
   box('door frame',0,2.35,-13.75,3.15,4.7,.3,M.cream);box('kitchen door',0,2.25,-13.55,2.7,4.5,.2,M.woodDark);box('door glass',0,3.1,-13.42,2.15,2,.06,M.glass);ball('door handle',1,1.8,-13.35,.13,.13,.13,M.yellow);
   sign('HOME SWEET HOME',0,5.15,-13.52,3.8);
   box('doormat',0,.05,-12.5,3,.07,1.2,M.woodDark);
-  // Ivy planter: a deliberate soldier-climbing challenge.
+  // The original elevated ivy trail is reachable by jumping from the compost bin.
   solid(17,0,-7,7,3.05,9,M.terra);box('planter soil',17,3.08,-7,6.5,.12,8.5,M.soil);
   for(let i=0;i<20;i++){const x=13.44;const y=.3+rand()*2.7;const z=-11+rand()*8;ball('ivy',x,y,z,.18,.6,.75,M.leaf);}
   sign('IVY WALL',13.35,1.8,-2.43,2);
@@ -109,7 +115,7 @@ export function buildWorld(scene,chapter=1) {
   for(let i=0;i<5;i++){const x=-35+i*17;for(let j=0;j<3;j++)ball('cloud',x+j*3,22+Math.sin(i*5)*2+Math.sin(j)*1.1,-42+Math.cos(i)*5,7,3,4,M.cloud);}
   }
   // Merge static scenery by material to keep the browser's draw-call count modest.
-  const groups=new Map();for(const mesh of statics){const key=mesh.material.uniqueId;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(mesh);}
+  const groups=new Map();for(const mesh of statics){if(!mesh.isEnabled())continue;const key=mesh.material.uniqueId;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(mesh);}
   for(const meshes of groups.values()){const merged=B.Mesh.MergeMeshes(meshes,true,true,undefined,false,false);if(merged){merged.receiveShadows=true;merged.freezeWorldMatrix();}}
 
   function makeAnt(type='worker',view=false) {
@@ -161,12 +167,33 @@ export function buildWorld(scene,chapter=1) {
     for(const leg of ant.legs){leg.pivot.rotation.y=leg.side*(leg.i-1)*.3*amount;leg.pivot.rotation.z=leg.side*.3*amount;}
     for(const wing of ant.wings)wing.setEnabled(false);
   }
+  let eggFactory=null;const eggRoots=new Set(),stations=[];
+  function dressEgg(root){
+    if(!eggFactory||root.isDisposed()||root.metadata?.importedEgg)return;
+    const fallback=root.getChildren();const actor=eggFactory.create({parent:root,height:.68,name:'Meshy ant egg'});if(!actor)return;
+    fallback.forEach(mesh=>mesh.dispose());root.metadata={...root.metadata,importedEgg:true};
+    let parent=root;while(parent&&parent.name!=='viewmodel')parent=parent.parent;
+    if(parent)actor.meshes.forEach(mesh=>{mesh.renderingGroupId=2;mesh.alwaysSelectAsActiveMesh=true;});
+  }
   function makeEgg(parent=null){
     const root=new B.TransformNode('throwable egg',scene);root.parent=parent;
     ball('pearl egg',0,.34,0,.55,.64,.84,M.egg,root);
     ball('egg shell highlight',-.13,.48,.1,.15,.18,.34,M.white,root);
-    return root;
+    eggRoots.add(root);root.onDisposeObservable.add(()=>eggRoots.delete(root));dressEgg(root);return root;
   }
+  const propsReady=Promise.all([
+    loadPropFactory(B,scene,'sprayer').then(factory=>!!factory),
+    loadPropFactory(B,scene,'egg').then(factory=>{eggFactory=factory;for(const root of eggRoots)dressEgg(root);return !!factory;}),
+    loadPropFactory(B,scene,'station').then(factory=>{
+      if(!factory)return false;
+      const anchors=isRoyal?supplyPoints.map(p=>({...p,y:0,height:1.5})):place==='bathroom'?[{x:10,y:1.17,z:17.6,height:1.3}]:isWalls?[{x:10,y:1.25,z:18,height:1.2}]:chapter===2?[{x:10,y:1.4,z:16,height:1.2}]:[{x:8,y:1.45,z:10,height:1.2}];
+      for(const p of anchors){const actor=factory.create({height:p.height,name:'Meshy refill station'});actor.root.position.set(p.x,p.y,p.z);stations.push(actor);}
+      // Cabinets stay in place after gear pickup; old loose bottles disappear.
+      gearPickup.getChildren().forEach(node=>node.setEnabled(false));
+      scene.transformNodes.filter(node=>node.name==='legacy royal supply station').forEach(node=>node.setEnabled(false));return true;
+    })
+  ]);
+
   function makeViewModel(camera) {
     const root=new B.TransformNode('viewmodel',scene);root.parent=camera;
     const hands=new B.TransformNode('carrying hands',scene);hands.parent=root;
@@ -183,22 +210,14 @@ export function buildWorld(scene,chapter=1) {
     const pressure=ball('pressure gauge',-.07,.13,-.18,.08,.025,.08,M.glass,gun);
     const barrel=cyl('nozzle',0,.01,.34,.14,.42,M.metal,gun);barrel.rotation.x=Math.PI/2;
     const tip=cyl('tip',0,.01,.57,.19,.09,M.lime,gun);tip.rotation.x=Math.PI/2;
-    const hopper=cyl('cannon hopper',0,.23,-.04,.31,.34,M.wood,gun,.4);hopper.setEnabled(false);
     ball('gripping glove',.015,-.17,-.14,.17,.19,.16,M.glove,gun);
-    const sleeve=cyl('tool sleeve',.1,-.31,-.31,.2,.4,M.leaf,gun);sleeve.rotation.x=1.05;sleeve.rotation.z=-.28;
-    // Legs are anchored to Marin's body in world space, so looking down reveals feet.
-    const body=new B.TransformNode('Marin body',scene);body.setEnabled(false);ball('denim waist',0,1.02,-.22,.55,.4,.4,M.blue,body);
-    for(const side of [-1,1]){
-      ball('denim leg',side*.15,.52,-.04,.21,.95,.25,M.blue,body);
-      ball('stomp boot',side*.15,.14,.11,.25,.25,.49,M.glove,body);
-      ball('boot sole',side*.15,.04,.12,.27,.065,.51,M.chitin,body);
-      for(let i=0;i<3;i++)box('boot laces',side*.15,.252,.11+i*.065,.12,.012,.018,M.cream,body);
-      cyl('boot cuff',side*.15,.27,-.04,.235,.13,M.woodDark,body);
-    }
+    const sleeve=cyl('tool sleeve',.1,-.31,-.31,.2,.4,M.white,gun);sleeve.rotation.x=1.05;sleeve.rotation.z=-.28;
+    // The original detached denim legs have been replaced by the imported Marin actor.
+    const body=new B.TransformNode('Marin body',scene);body.setEnabled(false);
     for(const mesh of root.getChildMeshes()){mesh.alwaysSelectAsActiveMesh=true;mesh.renderingGroupId=2;}
     scene.setRenderingAutoClearDepthStencil(2,true,true,true);
-    return {root,hands,held,heldEgg,gun,hopper,body,tip};
+    return {root,hands,held,heldEgg,gun,body,tip};
   }
 
-  return {supplyPoints,syncQueen,finale,queenSlam,eggSpawns,makeEgg,finishChapter,resetChapter,animate,M,mat,box,ball,cyl,rod,colliders,groundSurfaces,caches,bench,clue,clueMarker,doorMarker,markers,gearPickup,makeAnt,squashAnt,makeViewModel};
+  return {fixtureReady,waterAt,updateWater,propsReady,stations,supplyPoints,syncQueen,finale,queenSlam,eggSpawns,makeEgg,finishChapter,resetChapter,animate,M,mat,box,ball,cyl,rod,colliders,groundSurfaces,caches,bench,clue,clueMarker,doorMarker,markers,gearPickup,makeAnt,squashAnt,makeViewModel};
 }

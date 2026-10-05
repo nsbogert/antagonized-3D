@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {canStomp,segmentHitsSphere,damageAnt,collectWorker,nearestBait,cacheIsClear,objectiveFor,stompTarget,SPRAY,beginReload,updateTank,collectGear,canAutoCollect,surfaceHeightAt,applyFoam,foamMovementScale,SOLDIER_FOAM_SECONDS} from './core.mjs';
+import {canStomp,segmentHitsSphere,damageAnt,collectWorker,cacheIsClear,objectiveFor,stompTarget,SPRAY,consumeTank,collectGear,canAutoCollect,surfaceHeightAt,applyFoam,foamMovementScale,SOLDIER_FOAM_SECONDS} from './core.mjs';
 
 test('direct hits and patch contact give soldiers the same extended subduing window',()=>{
   for(const coat of [a=>damageAnt(a,1,'foam'),applyFoam]){
@@ -49,7 +49,7 @@ test('nearby ammo loads only in throw/cannon mode and respects capacity, height,
   const s={weapon:0,ammo:0,cannon:false,ride:null},p={x:0,y:0,z:0};
   const a={type:'worker',state:'dead',x:1.2,y:0,z:0};
   assert.ok(canAutoCollect(s,p,a));
-  for(const weapon of [1,2,3])assert.equal(canAutoCollect({...s,weapon},p,a),false);
+  for(const weapon of [1,2])assert.equal(canAutoCollect({...s,weapon},p,a),false);
   assert.equal(canAutoCollect({...s,ammo:1},p,a),false);
   assert.ok(canAutoCollect({...s,cannon:true,ammo:2},p,a));
   assert.equal(canAutoCollect({...s,cannon:true,ammo:3},p,a),false);
@@ -75,28 +75,20 @@ test('jump assistance prefers nearby workers and prepared soldiers, not flyers o
   assert.equal(stompTarget(p,[{...worker,y:3}],0),null);
   soldier.foam=5;assert.equal(stompTarget(p,[worker,soldier],0),soldier);
 });
-test('gear is a loaded pickup, equips spray, and cannot refill before collection',()=>{
-  const s={gear:false,tank:0,weapon:0,reloadRemaining:0};
-  assert.equal(beginReload(s),false);updateTank(s,5,false);assert.equal(s.tank,0);
+test('kit pickup is loaded, while station refills preserve the selected tool',()=>{
+  const s={gear:false,tank:0,weapon:0};
+  assert.equal(consumeTank(s,SPRAY.cost),false);assert.equal(s.tank,0);
   assert.equal(collectGear(s),true);assert.equal(s.tank,100);assert.equal(s.weapon,1);
-  s.weapon=2;s.tank=10;s.reloadRemaining=.6;assert.equal(collectGear(s),false);
-  assert.equal(s.tank,100);assert.equal(s.weapon,2);assert.equal(s.reloadRemaining,0);
+  s.weapon=2;s.tank=10;assert.equal(collectGear(s),false);
+  assert.equal(s.tank,100);assert.equal(s.weapon,2);
 });
-test('tank automatically refills after releasing attack, and empty refills even while held',()=>{
-  const s={gear:true,tank:30,reloadRemaining:0,tankIdle:0};
-  updateTank(s,3,true);assert.equal(s.reloadRemaining,0);
-  updateTank(s,.6,false);assert.equal(s.reloadRemaining,0);
-  updateTank(s,.6,false);assert.ok(s.reloadRemaining>0);
-  updateTank(s,.7,true);assert.equal(s.tank,30);
-  assert.equal(updateTank(s,.7,true),true);assert.equal(s.tank,100);
-  s.tank=0;updateTank(s,.1,true);assert.ok(s.reloadRemaining>0);
-  updateTank(s,2,true);assert.equal(s.tank,100);
-});
-test('insufficient foam or mist can request one refill without restarting its timer',()=>{
-  const s={gear:true,tank:4,reloadRemaining:0};
-  assert.ok(beginReload(s));updateTank(s,.4,true);const remaining=s.reloadRemaining;
-  assert.equal(beginReload(s),false);assert.equal(s.reloadRemaining,remaining);
-  updateTank(s,2,true);assert.equal(beginReload(s),false);
+test('shared fuel cannot overspend; insufficient foam still leaves spray available',()=>{
+  const s={gear:true,tank:4};
+  assert.equal(consumeTank(s,8),false);assert.equal(s.tank,4);
+  assert.ok(consumeTank(s,SPRAY.cost));assert.equal(s.tank,3.3);
+  s.tank=.2;assert.equal(consumeTank(s,SPRAY.cost),false);assert.equal(s.tank,.2);
+  s.tank=8;assert.ok(consumeTank(s,8));assert.equal(s.tank,0);
+  assert.equal(consumeTank(s,SPRAY.cost),false);assert.equal(s.tank,0);
 });
 test('spray defeats workers in three pulses, flyers in six, while soldier armor remains',()=>{
   for(const [type,hp,count] of [['worker',1,3],['flyer',2,6]]){
@@ -132,14 +124,7 @@ test('one worker in hand, exactly three with the cannon',()=>{
   const s={ammo:0,cannon:false};assert.equal(collectWorker(s),true);assert.equal(collectWorker(s),false);
   s.cannon=true;assert.equal(collectWorker(s),true);assert.equal(collectWorker(s),true);assert.equal(collectWorker(s),false);assert.equal(s.ammo,3);
 });
-test('bait attracts workers more readily than soldiers and never flyers',()=>{
-  const bait={x:10,z:0,life:5};
-  assert.equal(nearestBait({x:0,z:0,type:'worker'},[bait]),bait);
-  assert.equal(nearestBait({x:0,z:0,type:'soldier'},[bait]),null);
-  assert.equal(nearestBait({x:9,z:0,type:'flyer'},[bait]),null);
-  assert.equal(nearestBait({x:0,z:0,type:'worker'},[{...bait,life:0}]),null);
-});
-test('food caches can be secured when workers are distracted, without killing them',()=>{
+test('food caches can be secured when workers have left or been defeated',()=>{
   const c={x:0,z:0};assert.equal(cacheIsClear(c,[{type:'worker',state:'alive',x:1,z:0}]),false);
   assert.equal(cacheIsClear(c,[{type:'worker',state:'alive',x:5,z:0}]),true);
   assert.equal(cacheIsClear(c,[{type:'worker',state:'dead',x:1,z:0}]),true);

@@ -1,0 +1,164 @@
+[
+  {
+    "name": "marin-front",
+    "title": "Marin \u00b7 front",
+    "category": "Marin",
+    "kind": "Start here",
+    "note": "Full-body A-pose. Use this as the main Marin input; the other views guide her likeness.",
+    "file": "marin-front.png"
+  },
+  {
+    "name": "marin-profile",
+    "title": "Marin \u00b7 profile",
+    "category": "Marin",
+    "kind": "Supporting view",
+    "note": "Side silhouette, bob haircut, suit, gloves and boots.",
+    "file": "marin-profile.png"
+  },
+  {
+    "name": "marin-back",
+    "title": "Marin \u00b7 back",
+    "category": "Marin",
+    "kind": "Supporting view",
+    "note": "Rear suit and hair details. Backpack is a separate asset.",
+    "file": "marin-back.png"
+  },
+  {
+    "name": "marin-face-closeups",
+    "title": "Marin \u00b7 face close-ups",
+    "category": "Marin",
+    "kind": "Detail sheet",
+    "note": "Front, three-quarter and profile. Guide for likeness; do not use as the sole full-body input.",
+    "file": "marin-face-closeups.png"
+  },
+  {
+    "name": "ant-worker-primary",
+    "title": "Worker \u00b7 single view",
+    "category": "Ants",
+    "kind": "Start here",
+    "note": "Compact dark worker. Reuse the same model for carrying, throwing and a folded-leg defeated pose.",
+    "file": "ant-worker-primary.png"
+  },
+  {
+    "name": "ant-worker-sheet",
+    "title": "Worker \u00b7 turnaround",
+    "category": "Ants",
+    "kind": "Reference sheet",
+    "note": "Body, profile, rear and head detail. Use to check the generated creature from multiple angles.",
+    "file": "ant-worker-sheet.png"
+  },
+  {
+    "name": "ant-soldier-primary",
+    "title": "Soldier \u00b7 single view",
+    "category": "Ants",
+    "kind": "Start here",
+    "note": "Large terracotta soldier with a broad rideable back and powerful mandibles.",
+    "file": "ant-soldier-primary.png"
+  },
+  {
+    "name": "ant-soldier-sheet",
+    "title": "Soldier \u00b7 turnaround",
+    "category": "Ants",
+    "kind": "Reference sheet",
+    "note": "Body, profile, rear and head detail. Use to check the generated creature from multiple angles.",
+    "file": "ant-soldier-sheet.png"
+  },
+  {
+    "name": "ant-flyer-primary",
+    "title": "Flyer \u00b7 single view",
+    "category": "Ants",
+    "kind": "Start here",
+    "note": "Four translucent wings and six legs. Wings should be separate animated parts.",
+    "file": "ant-flyer-primary.png"
+  },
+  {
+    "name": "ant-flyer-sheet",
+    "title": "Flyer \u00b7 turnaround",
+    "category": "Ants",
+    "kind": "Reference sheet",
+    "note": "Body, profile, rear and head detail. Use to check the generated creature from multiple angles.",
+    "file": "ant-flyer-sheet.png"
+  },
+  {
+    "name": "ant-queen-primary",
+    "title": "Queen \u00b7 single view",
+    "category": "Ants",
+    "kind": "Start here",
+    "note": "The queen always wears her visible gold crown during battle. Keep it as a separate attached part so it can fall only when she is defeated. Eyes glow crimson red; preserve their compound-eye texture. Use a separate red emissive eye material.",
+    "file": "ant-queen-primary.png",
+    "eyeMaterial": {
+      "baseColor": "#ff2036",
+      "emissiveColor": "#ff2036",
+      "separateFromAmberArmor": true
+    }
+  },
+  {
+    "name": "ant-queen-sheet",
+    "title": "Queen \u00b7 turnaround",
+    "category": "Ants",
+    "kind": "Reference sheet",
+    "note": "The same prominent gold crown is visible in every view: front, profile, rear and facial close-up. Keep the crown attached until the queen is defeated. Eyes glow crimson red; preserve their compound-eye texture. Use a separate red emissive eye material.",
+    "file": "ant-queen-sheet.png",
+    "eyeMaterial": {
+      "baseColor": "#ff2036",
+      "emissiveColor": "#ff2036",
+      "separateFromAmberArmor": true
+    }
+  },
+  {
+    "name": "gear-sprayer-primary",
+    "title": "Backpack & sprayer",
+    "category": "Equipment",
+    "kind": "Assembly reference",
+    "note": "Shared base design for spray, foam and mist. Model the backpack, hose and wand as separate parts for animation.",
+    "file": "gear-sprayer-primary.png"
+  },
+  {
+    "name": "gear-ant-cannon-primary",
+    "title": "Ant cannon",
+    "category": "Equipment",
+    "kind": "Start here",
+    "note": "Wide barrel and empty hopper. Keep the hopper lid movable; carried ammo is a separate game object.",
+    "file": "gear-ant-cannon-primary.png"
+  },
+  {
+    "name": "prop-bait-trap-primary",
+    "title": "Bait trap",
+    "category": "Equipment",
+    "kind": "Start here",
+    "note": "A compact lure puck. Marin carries one and replenishes it at a refill station.",
+    "file": "prop-bait-trap-primary.png"
+  },
+  {
+    "name": "prop-refill-station-primary",
+    "title": "Refill station",
+    "category": "Equipment",
+    "kind": "Assembly reference",
+    "note": "Open supply case with three fluid cartridges and one bait dock. Use the standalone trap design for its removable bait.",
+    "file": "prop-refill-station-primary.png"
+  },
+  {
+    "name": "prop-queen-crown-primary",
+    "title": "The queen\u2019s crown",
+    "category": "World & pickups",
+    "kind": "Start here",
+    "note": "Separate wearable attachment: queen \u2192 falling pickup \u2192 Marin\u2019s victory outfit.",
+    "file": "prop-queen-crown-primary.png"
+  },
+  {
+    "name": "prop-ant-egg-primary",
+    "title": "Throwable ant egg",
+    "category": "World & pickups",
+    "kind": "Start here",
+    "note": "A single egg model can be repeated in clutches, collected and thrown.",
+    "file": "prop-ant-egg-primary.png"
+  },
+  {
+    "name": "environment-root-arch-primary",
+    "title": "Nest root arch",
+    "category": "World & pickups",
+    "kind": "Start here",
+    "note": "Reusable underground scenery with amber resin and pale green fungi.",
+    "file": "environment-root-arch-primary.png"
+  }
+]

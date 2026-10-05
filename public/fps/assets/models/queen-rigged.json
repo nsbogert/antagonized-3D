@@ -1,0 +1,22 @@
+{
+  "source": "queen-source.glb",
+  "sourceSha256": "3d85f6422fcf794ddfd9fb76ad11d28434cf8371a430987caa606904ea42945b",
+  "riggedFile": "queen-rigged.glb",
+  "bones": 36,
+  "bodyTriangles": 19978,
+  "crownTriangles": 6912,
+  "crownGeometry": "closed authored coronet with six smooth pearl tips",
+  "removedCrownShellTriangles": 251,
+  "repairedLegTriangles": 792,
+  "removedMalformedTriangles": 739,
+  "removedRearRemnantTriangles": 669,
+  "animations": [
+    "Idle",
+    "Walk",
+    "Threat",
+    "Defeat"
+  ],
+  "textureResolution": 2048,
+  "bytes": 12911596,
+  "rigStatus": "custom game rig; six-leg repair and detachable crown"
+}

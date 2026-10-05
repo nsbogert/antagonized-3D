@@ -2,7 +2,6 @@ import {CHAPTERS} from './chapters.mjs';
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 export const distanceXZ = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 export const MAX_AMMO = 3;
-export const MAX_BAITS = 1;
 export const GRAVITY = 22;
 export const JUMP_SPEED = 10.8;
 
@@ -23,27 +22,16 @@ export function stompTarget(player, ants, yaw) {
 }
 
 export const SPRAY = { damage:.38, range:8.5, cone:.82, interval:.09, cost:.7 };
-export const RELOAD_TIME = 1.35;
-export function beginReload(state) {
-  if (!state.gear || state.tank >= 100 || state.reloadRemaining > 0) return false;
-  state.reloadRemaining = RELOAD_TIME;
+// Tank fuel is finite. Only collecting the kit or visiting supplies restores it.
+export function consumeTank(state, cost) {
+  if (!state.gear || !Number.isFinite(cost) || cost <= 0 || state.tank < cost) return false;
+  state.tank = Math.max(0, state.tank - cost);
   return true;
-}
-export function updateTank(state, dt, attacking) {
-  if (!state.gear) return false;
-  if (state.reloadRemaining > 0) {
-    state.reloadRemaining = Math.max(0,state.reloadRemaining-dt);
-    if (!state.reloadRemaining) { state.tank=100; state.tankIdle=0; return true; }
-  } else {
-    state.tankIdle=attacking?0:(state.tankIdle||0)+dt;
-    if (state.tank<1 || (state.tank<100 && state.tankIdle>=1.1)) beginReload(state);
-  }
-  return false;
 }
 
 export function collectGear(state) {
   const first=!state.gear;
-  state.gear=true; state.tank=100; state.reloadRemaining=0; state.tankIdle=0;
+  state.gear=true; state.tank=100;
   if(first) state.weapon=1;
   return first;
 }
@@ -122,21 +110,19 @@ export function cacheIsClear(cache, ants) {
   return !ants.some(a => a.type === 'worker' && a.state === 'alive' && distanceXZ(a, cache) < 3.5 && Math.abs((a.y||0)-(cache.y||0))<1.5);
 }
 
-export function nearestBait(ant, baits) {
-  if (ant.type === 'flyer') return null;
-  const reach = ant.type === 'soldier' ? 4.5 : 13;
-  return baits.filter(b => b.life > 0 && distanceXZ(ant,b) < reach && Math.abs((ant.y||0)-(b.y||0))<1.5)
-    .sort((a,b) => distanceXZ(ant,a)-distanceXZ(ant,b))[0] || null;
-}
-
 export function objectiveFor(state) {
   const level=CHAPTERS[state.chapter]||CHAPTERS[1];
-  if(state.chapter===4){
+  if(level.place==='royal chamber'){
     const q=state.queen;
     if(!q||q.mode==='dormant')return {title:'Face the queen',detail:'Stock up on eggs. Enter the chamber to begin.',stage:1};
-    return {title:['Break the crown','Turn the guard','Finish the queen'][q.phase],detail:q.phase===0?'Bait workers away. Throw eggs or ants to break armor.':q.phase===1?'Soldier charges crack armor. Cannon shots work too.':'Dodge the red warnings. Attack during her recovery.',stage:q.phase+1};
+    return {title:['Break the crown','Turn the guard','Finish the queen'][q.phase],detail:q.phase===0?'Stop repair workers. Throw eggs or ants to break armor.':q.phase===1?'Soldier charges crack armor. Ant Launcher shots work too.':'Dodge the red warnings. Attack during her recovery.',stage:q.phase+1};
   }
-  if (state.secured < 3) return { title:state.chapter===3?'Starve the colony':'Cut off the food supply', detail:`${state.chapter===3?'Seal the three colony stores':'Secure the three food caches'} · ${state.secured}/3`, stage:1 };
-  if (!state.clue) return { title:state.chapter===3?'Find the queen’s signal':'Follow the colony', detail:level.climb, stage:2 };
-  return { title:state.chapter===3?'The royal seal':state.chapter===2?'Into the walls':'The trail leads inside', detail:level.exitDetail, stage:3 };
+  if(level.place==='bathroom'){
+    if(state.secured<3)return {title:'Seal their way in',detail:`Seal the three household entry points · ${state.secured}/3`,stage:1};
+    if(!state.clue)return {title:'Trace the plumbing trail',detail:level.climb,stage:2};
+    return {title:'Behind the bathroom wall',detail:level.exitDetail,stage:3};
+  }
+  if (state.secured < 3) return { title:level.place==='walls'?'Starve the colony':'Cut off the food supply', detail:`${level.place==='walls'?'Seal the three colony stores':'Secure the three food caches'} · ${state.secured}/3`, stage:1 };
+  if (!state.clue) return { title:level.place==='walls'?'Find the queen’s signal':'Follow the colony', detail:level.climb, stage:2 };
+  return { title:level.place==='walls'?'The royal seal':state.chapter===2?'On to the bathroom':'The trail leads inside', detail:level.exitDetail, stage:3 };
 }

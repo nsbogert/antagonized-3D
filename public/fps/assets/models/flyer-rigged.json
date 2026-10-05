@@ -1,0 +1,23 @@
+{
+  "source": "Meshy_AI_Stylized_Flying_Ant_M_1004032821_image-to-3d-texture.glb",
+  "sourceSha256": "dea9cae98de3ccb706cfcf1e925c244c45d1d8085eaab40797b3e6592da16c86",
+  "riggedFile": "flyer-rigged.glb",
+  "bones": 40,
+  "sourceTriangles": 713032,
+  "bodyTriangles": 76860,
+  "vertices": 72156,
+  "animations": [
+    "Hover",
+    "Fly",
+    "Dive",
+    "Grounded",
+    "Defeat"
+  ],
+  "textureResolution": 1024,
+  "wingTriangles": 23804,
+  "purpose": "Live flyer controller and rig preview; articulated wings, no walk clip",
+  "bytes": 8630784,
+  "groundY": -0.266808,
+  "rigStatus": "custom flying-ant rig with two three-joint wings; preserved UV islands and reduced game mesh",
+  "defeatPose": "Full back roll with folded wings raised off the contact plane; body rests on the floor"
+}

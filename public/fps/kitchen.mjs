@@ -1,19 +1,26 @@
 // Kitchen scenery uses the same lightweight mesh/material helpers as the backyard.
-export function buildKitchen({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}) {
+export function buildKitchen({B,scene,V,M,mat,surface,box,ball,cyl,rod,solid,sign,makeMarker}) {
   const tile=mat('porcelain tile','#d8d7bd'),grout=mat('warm grout','#9aab9c');
   const cabinet=mat('sage cabinets','#50766b'),trim=mat('cabinet inset','#6f9180');
   const marble=mat('cream countertop','#eee5cc'),steel=mat('brushed steel','#8faaa9');
   const brass=mat('brass fittings','#d1ad62'),wall=mat('warm kitchen plaster','#e6d9bd');
   const light=mat('pendant glow','#fff1bf',{glow:1}),red=mat('cereal red','#c86445');
   steel.specularColor=new B.Color3(.6,.65,.65);steel.specularPower=90;
+  surface(tile,'tile',{base:'#d4d5c7',meters:2.5,shine:.22,bump:.3});
+  const tileWarm=surface(mat('ivory porcelain tile','#ebe5d2'),'tile',{base:'#e6e1d1',meters:2.5,shine:.22,bump:.3});
+  const backsplash=surface(mat('glazed subway ceramic','#efeade'),'glaze',{base:'#eee9dc',meters:1.6,shine:.28,bump:.22});
+  surface(wall,'plaster',{base:'#ded2bb',meters:2.8,shine:.025,bump:.5});
+  surface(marble,'marble',{base:'#e8e0cd',meters:3.4,shine:.24,bump:.25});
+  surface(cabinet,'paint',{base:'#50766b',meters:1.8,shine:.09,bump:.25});
+  surface(trim,'paint',{base:'#6b8979',meters:1.8,shine:.09,bump:.25});
   const groundSurfaces=[{x:-23,z:-14,w:46,d:38,top:.025}];
   box('tile floor',0,-.15,5,48,.3,40,grout);
-  for(let x=-22;x<23;x+=2.5)for(let z=-12;z<24;z+=2.5)box('floor tile',x,.012,z,2.45,.025,2.45,((Math.round(x/2.5)+Math.round(z/2.5))%2)?tile:M.cream);
+  for(let x=-22;x<23;x+=2.5)for(let z=-12;z<24;z+=2.5)box('floor tile',x,.012,z,2.45,.025,2.45,((Math.round(x/2.5)+Math.round(z/2.5))%2)?tile:tileWarm);
   solid(-24,0,5,.4,12,40,wall);solid(24,0,5,.4,12,40,wall);solid(0,0,-14,48,12,.4,wall);solid(0,0,24,48,12,.4,wall);
   box('ceiling',0,12.2,5,48,.3,40,M.cream);
   for(const x of [-23.7,23.7])box('baseboard',x,.25,5,.18,.5,38,M.white);
   box('back baseboard',0,.25,-13.7,47,.5,.18,M.white);
-  for(let x=-22;x<24;x+=2)for(let y=3.5;y<7;y+=.65)box('subway backsplash',x+(Math.round(y/.65)%2)*.5,y,-13.65,1.94,.59,.08,M.white);
+  for(let x=-22;x<24;x+=2)for(let y=3.5;y<7;y+=.65)box('subway backsplash',x+(Math.round(y/.65)%2)*.5,y,-13.65,1.94,.59,.08,backsplash);
   // Tall refrigerator and pantry leave a navigable route to the wall breach.
   solid(-19,0,-8,5,9,5,steel);
   box('fridge door',-19,4.6,-5.43,4.85,8.6,.18,M.white);
@@ -65,8 +72,8 @@ export function buildKitchen({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMa
   for(let i=0;i<10;i++)ball('pheromone trail',14.6+i*.3,3.13,-4-i*.3,.11,.04,.16,M.lime);
   sign('FOLLOW THE TRAIL',17,5.7,-12.8,4.5);
   const clueMarker=makeMarker('⌁','SINK TRAIL',V(16,4.8,-5),3.05);clueMarker.el.hidden=true;
-  box('wall breach',-13,1,-13.68,2.4,2,.12,M.black);for(let i=0;i<7;i++)box('broken plaster',-14.3+i*.4,.1,-13.1,.35,.17,.3,M.cream);
-  const doorMarker=makeMarker('↗','WALL BREACH',V(-13,2.5,-12.3));doorMarker.el.hidden=true;
+  box('bathroom door frame',-13,3.1,-13.6,3.2,6.2,.18,M.white);box('bathroom door',-13,3,-13.45,2.8,6,.12,M.wood);box('bathroom door glass',-13,4.1,-13.36,2.1,2.7,.05,M.glass);ball('bathroom door handle',-12,2.5,-13.28,.16,.16,.16,brass);sign('BATHROOM',-13,7,-13.3,4);
+  const doorMarker=makeMarker('↗','BATHROOM',V(-13,2.5,-12.3));doorMarker.el.hidden=true;
   return {caches,bench,clue,clueMarker,doorMarker,gearPickup,groundSurfaces,
     animate(time){drips.forEach((drop,i)=>drop.position.y=4.5-((time*1.2+i*.4)%1.3));}};
 }

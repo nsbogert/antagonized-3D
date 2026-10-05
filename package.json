@@ -1,15 +1,28 @@
 {
   "name": "antagonized-3d",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
-  "description": "Marin takes back her home in a four-chapter browser FPS.",
+  "description": "Marin takes back her home in a five-chapter browser adventure.",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node --test public/fps/*.test.mjs && node --experimental-vm-modules public/fps/tests/queen-runtime.cjs",
+    "test": "node --test public/fps/*.test.mjs && node --experimental-vm-modules public/fps/tests/queen-runtime.cjs && npm run test:marin && npm run test:queen-model && npm run test:soldier-model && npm run test:worker-model && npm run test:interactions && npm run test:flyer-model && npm run test:flyer-game && npm run test:ground-ants",
     "test:rules": "node --test public/fps/*.test.mjs",
-    "test:queen": "node --experimental-vm-modules public/fps/tests/queen-runtime.cjs"
+    "test:queen": "node --experimental-vm-modules public/fps/tests/queen-runtime.cjs",
+    "test:marin": "node public/fps/tests/marin-runtime.cjs && ANTAGONIZED_TEST_MARIN=1 node --experimental-vm-modules public/fps/tests/queen-runtime.cjs",
+    "test:queen-model": "node public/fps/tests/queen-rig-runtime.cjs",
+    "test:soldier-model": "node public/fps/tests/soldier-rig-runtime.cjs",
+    "test:worker-model": "node public/fps/tests/worker-rig-runtime.cjs",
+    "test:interactions": "node --experimental-vm-modules public/fps/tests/interactions-runtime.cjs",
+    "test:flyer-model": "node public/fps/tests/flyer-rig-runtime.cjs",
+    "test:flyer-game": "node --experimental-vm-modules public/fps/tests/flyer-game-runtime.cjs",
+    "test:ground-ants": "node --experimental-vm-modules public/fps/tests/ground-ant-game-runtime.cjs",
+    "test:props": "ANTAGONIZED_TEST_PROPS=1 node --experimental-vm-modules public/fps/tests/interactions-runtime.cjs",
+    "build": "node tools/build.mjs",
+    "deploy": "node tools/deploy.mjs",
+    "deploy:setup": "node tools/deploy.mjs --setup",
+    "test:deployment": "node --test tools/deploy.test.mjs"
   }
 }

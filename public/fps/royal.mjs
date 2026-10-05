@@ -1,11 +1,15 @@
 import {buildSlamEffects} from './slam-effects.mjs';
 import {makeRoyalCrown,buildQueenFinale} from './queen-finale.mjs';
 import {createQueenMotion,stepQueenMotion} from './queen-motion.mjs';
-export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMarker}){
+export function buildRoyal({B,scene,V,M,mat,surface,box,ball,cyl,rod,solid,sign,makeMarker}){
   const earth=mat('royal earth','#3a302c'),floor=mat('royal clay','#74604d'),rootMat=mat('ancient roots','#4b3932');
   const resin=mat('royal amber','#ab7134',{glow:.12}),glow=mat('brood glow','#b0d994',{glow:.7});
   const shell=mat('queen obsidian','#3a2027'),edge=mat('queen copper','#8f4641'),soft=mat('queen weak spot','#f0b967',{glow:.5});
+  const eyes=mat('queen crimson eyes','#ff2036',{glow:1.1});
   const warning=mat('queen warning','#ff765d',{glow:1,alpha:.28}),warningEdge=mat('warning edge','#ff9a66',{glow:1});
+  surface(earth,'earth',{base:'#51453c',meters:4.8,seed:92,bump:1.1});
+  surface(floor,'clay',{base:'#826e58',meters:4.4,seed:102,bump:.9,shine:.035});
+  surface(rootMat,'wood',{base:'#514037',meters:1.8,seed:41,bump:.8});
   const groundSurfaces=[{x:-24,z:-14,w:48,d:38,top:.025}];
   box('royal chamber floor',0,-.15,5,48,.35,38,floor);
   box('cavern ceiling',0,13,5,48,.6,38,earth);
@@ -35,11 +39,11 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   const exitRoots=new B.TransformNode('entrance roots',scene);
   for(const x of [-2.8,2.8])rod('entrance arch',V(x,0,23.3),V(x*.4,5.4,23.3),.45,resin,exitRoots);
   sign('BACK TO DAYLIGHT',0,6,23.2,5);
-  const bench={x:-10,y:0,z:19},supplyPoints=[bench,{x:19,y:0,z:12}],gearPickup=new B.TransformNode('royal supplies',scene);
+  const bench={x:-10,y:0,z:19},supplyPoints=[bench],gearPickup=new B.TransformNode('royal supplies',scene);
   for(const point of supplyPoints){
-    const {x,z}=point;box('supply case',x,.4,z,2.4,.8,1.3,M.metal);
-    for(let i=-1;i<=1;i++){cyl('loaded canister',x+i*.6,1.1,z,.35,.6,M.white);ball('supply light',x+i*.6,1.45,z,.2,.15,.2,glow);}
-    sign('REFILL · E',x,2.3,z,2.8);makeMarker('✚','FIELD SUPPLIES',V(x,3,z));
+    const {x,z}=point;const legacy=new B.TransformNode('legacy royal supply station',scene);box('supply case',x,.4,z,2.4,.8,1.3,M.metal,legacy);
+    for(let i=-1;i<=1;i++){cyl('loaded canister',x+i*.6,1.1,z,.35,.6,M.white,legacy);ball('supply light',x+i*.6,1.45,z,.2,.15,.2,glow,legacy);}
+    sign('WALK UP · REFILL',x,2.3,z,2.8);makeMarker('✚','FIELD SUPPLIES',V(x,3,z));
   }
   const eggSpawns=[];
   for(const [x,z] of [[-4,16],[5,17],[-11,8],[11,8],[-7,-8],[7,-8],[-20,14],[20,-3]]){
@@ -58,7 +62,7 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
   const plates=[];
   for(let i=0;i<3;i++)plates.push(ball('breakable resin plate',0,2.65,-3+i*1.7,4.65,2.6,2.1,resin,body));
   for(const side of [-1,1]){
-    ball('queen luminous eye',side*1.04,2.9,3.26,.7,.55,.4,soft,body);
+    ball('queen luminous eye',side*1.04,2.9,3.26,.7,.55,.4,eyes,body);
     rod('queen antenna',V(side*.8,3.4,2.8),V(side*1.9,5,3.3),.12,edge,body);
     rod('queen antenna tip',V(side*1.9,5,3.3),V(side*2.7,5.5,4.1),.09,edge,body);
     rod('queen jaw',V(side*.95,1.8,3.1),V(side*1.6,1.3,4.3),.32,edge,body);
@@ -94,9 +98,13 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
     lastTime=time;stepQueenMotion(motion,q,dt,time);
     body.position.y=motion.height;body.rotation.x=motion.pitch;body.rotation.z=motion.roll;
     queen.position.set(q.x,defeated?.15:0,q.z);queen.rotation.y=q.yaw;queen.rotation.z=defeated?1.35:0;
-    const amount=Math.ceil(q.armor/3);plates.forEach((p,i)=>p.setEnabled(i<amount));
+    const imported=finale.syncCombat(q,time,dt);
+    // The imported shell carries its own armor/glow cues. These coarse shapes
+    // belong only to the procedural fallback and must never cover the new mesh.
+    const amount=Math.ceil(q.armor/3);plates.forEach((p,i)=>p.setEnabled(!imported&&!defeated&&i<amount));
+    weak.setEnabled(!imported&&!defeated);
     weak.material=q.open>0?soft:shell;abdomen.material=q.hitFlash>0?edge:shell;
-    foam.setEnabled(q.foam>0&&!defeated);
+    foam.setEnabled(!imported&&q.foam>0&&!defeated);
     for(let i=0;i<legs.length;i++){
       const leg=legs[i],f=motion.feet[i];
       segment(leg.thigh,f.hip,f.knee);leg.knee.position.set(f.knee.x,f.knee.y,f.knee.z);segment(leg.shin,f.knee,f.ankle);
@@ -112,6 +120,6 @@ export function buildRoyal({B,scene,V,M,mat,box,ball,cyl,rod,solid,sign,makeMark
     }
   }
   return {eggSpawns,supplyPoints,groundSurfaces,gearPickup,caches,bench,clue,clueMarker,doorMarker,syncQueen,finale,queenSlam,
-    animate(time){slamEffects.animate(time);},finishChapter(){defeated=true;slamEffects.reset();daylight.setEnabled(true);exitRoots.setEnabled(false);slam.setEnabled(false);ring.setEnabled(false);lane.setEnabled(false);},
+    animate(time){slamEffects.animate(time);},finishChapter(){defeated=true;plates.forEach(p=>p.setEnabled(false));weak.setEnabled(false);foam.setEnabled(false);slamEffects.reset();daylight.setEnabled(true);exitRoots.setEnabled(false);slam.setEnabled(false);ring.setEnabled(false);lane.setEnabled(false);},
     resetChapter(){finale.reset();slamEffects.reset();motion=createQueenMotion();lastTime=0;defeated=false;daylight.setEnabled(false);exitRoots.setEnabled(true);queen.rotation.z=0;}};
 }

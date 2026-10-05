@@ -1,0 +1,22 @@
+{
+  "source": "worker-source.glb",
+  "sourceSha256": "8a88ff19e7dd5d98f0eb237324636a0dbf7ec41f8cb4d5ac3449f07b70021218",
+  "riggedFile": "worker-rigged.glb",
+  "bones": 34,
+  "sourceTriangles": 476222,
+  "bodyTriangles": 46350,
+  "vertices": 43349,
+  "animations": [
+    "Idle",
+    "Walk",
+    "Bite",
+    "Carry",
+    "Stomp",
+    "Defeat"
+  ],
+  "textureResolution": 2048,
+  "purpose": "Live worker model in all four chapters, plus rig preview",
+  "bytes": 17524716,
+  "groundY": -0.47612,
+  "rigStatus": "custom six-leg worker rig; preserved UV islands and reduced game mesh"
+}

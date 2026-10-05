@@ -85,7 +85,7 @@ test('hits stagger briefly, sustained fire cannot pin her, and phase changes do 
  tick(q,1.5);assert.ok(Math.hypot(q.x-start.x,q.z-start.z)>.5);
  const before={x:q.x,z:q.z};assert.equal(damageQueen(q,100,'spray'),'phase');assert.deepEqual({x:q.x,z:q.z},before);
 });
-test('repair stops need nearby workers and end when bait pulls them away',()=>{
+test('repair stops need nearby workers and end when workers are stopped',()=>{
  const q=awake();q.armor=3;q.timer=100;
  tick(q,.5,p,0);assert.equal(q.mode,'idle');assert.equal(q.armor,3);
  stepQueen(q,.02,p,2);assert.equal(q.mode,'repair');const start={x:q.x,z:q.z};

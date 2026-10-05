@@ -8,3 +8,9 @@ node_modules/
 coverage/
 playwright-report/
 test-results/
+
+# Generated production bundle and deployment state
+.deploy/
+
+# Local extracted copies; retain the canonical references and downloadable ZIP
+/public/fps/model-references/antagonized-reference-pack-v1*/

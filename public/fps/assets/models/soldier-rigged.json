@@ -1,0 +1,21 @@
+{
+  "source": "soldier-source.glb",
+  "sourceSha256": "b4b69f1be64b9f4b40618fd4d661479568bfd95cae3682d7310d5167f386c620",
+  "riggedFile": "soldier-rigged.glb",
+  "bones": 34,
+  "sourceTriangles": 899966,
+  "bodyTriangles": 74502,
+  "vertices": 69411,
+  "animations": [
+    "Idle",
+    "Walk",
+    "Bite",
+    "Threat",
+    "Subdued",
+    "Defeat"
+  ],
+  "textureResolution": 2048,
+  "bytes": 14555464,
+  "groundY": -0.413764,
+  "rigStatus": "custom six-leg soldier rig; preserved UV islands and reduced game mesh"
+}

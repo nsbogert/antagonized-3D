@@ -126,8 +126,8 @@ export function stepQueen(q,dt,player,repairWorkers=0){
 export function queenHint(q){
   if(q.mode==='dead')return 'THE COLONY IS SILENT';
   if(q.mode==='dormant')return 'Approach the queen to begin';
-  if(q.mode==='intermission')return 'Catch your breath · health, tank and bait restored';
-  if(q.mode==='repair')return 'REPAIRING RESIN · bait the workers away';
+  if(q.mode==='intermission')return 'Catch your breath · visit supplies to refill';
+  if(q.mode==='repair')return 'REPAIRING RESIN · spray or foam the workers';
   if(q.stagger>0)return 'STAGGERED · keep attacking';
   if(q.mode==='warn')return q.attack==='slam'?'GROUND SLAM · leave the red circle or jump':'CHARGE · move out of the red lane';
   if(q.mode==='charge')return 'KEEP CLEAR OF HER CHARGE';

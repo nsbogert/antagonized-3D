@@ -1,0 +1,28 @@
+{
+  "source": "Meshy_AI_Marin_Rigged_All_Animations (2).glb",
+  "suppliedBy": "user",
+  "imported": "2026-10-03",
+  "sha256": "b2bda3dbad173cbe3ad9faea81a9a83d143a630f54b01aa903d9c3270ce9aed2",
+  "triangles": 31011,
+  "joints": 23,
+  "animations": [
+    "Running",
+    "Walking",
+    "Backflip",
+    "Backflip_and_Rise",
+    "Boom_Dance",
+    "Breakdance_1990",
+    "Hip_Hop_Dance_3",
+    "Idle_15",
+    "Jump_Over_Obstacle_2",
+    "Love_You_Pop_Dance",
+    "Male_Bend_Over_Pick_Up",
+    "Rope_Hang_Backflip_to_Crouch",
+    "Step_Hip_Hop_Dance"
+  ],
+  "victoryCycle": [
+    "Boom_Dance",
+    "Love_You_Pop_Dance",
+    "Breakdance_1990"
+  ]
+}
