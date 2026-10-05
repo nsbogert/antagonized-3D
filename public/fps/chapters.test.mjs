@@ -15,6 +15,10 @@ test('chapter selection falls back safely and kitchen carries only earned equipm
   assert.equal(Object.hasOwn(chapterLoadout(2,{gear:false,cannon:false,mist:true}),'mist'),false);
   assert.equal(chapterLoadout(1,{gear:true,cannon:true}).gear,false);
   assert.equal(chapterLoadout(2).ammo,3);
+  for(const chapter of [2,3,4,5]){
+    assert.equal(chapterLoadout(chapter).weapon,1,'direct entry defaults to spray');
+    assert.equal(chapterLoadout(chapter,{gear:true,cannon:true,ammo:3}).weapon,1,'carried launcher does not override default spray');
+  }
 });
 test('kitchen objectives lead from food to elevated trail to bathroom door',()=>{
   assert.equal(objectiveFor({chapter:2,secured:2,clue:false}).stage,1);

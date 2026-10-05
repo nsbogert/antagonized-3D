@@ -73,7 +73,7 @@ export function chapterLoadout(chapter,saved=null){
   const ammo=Math.max(0,Math.min(cannon?3:1,Math.floor(Number(source.ammo)||0)));
   const ammoKinds=Array.from({length:ammo},(_,i)=>source.ammoKinds?.[i]==='egg'?'egg':'carcass');
   const tank=gear?(Number.isFinite(source.tank)?Math.max(0,Math.min(100,source.tank)):100):0;
-  return {gear,cannon,ammo,ammoKinds,weapon:cannon?0:gear?1:0,tank};
+  return {gear,cannon,ammo,ammoKinds,weapon:gear?1:0,tank};
 }
 export function nearLevelPoint(player,point,radius=2.5){
   return Math.hypot(player.x-point.x,player.z-point.z)<radius&&Math.abs(player.y-(point.y||0))<(point.y>1?.5:1.2);

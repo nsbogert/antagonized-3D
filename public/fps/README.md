@@ -123,7 +123,7 @@ The pause menu has separate music enable/volume controls and sound-effects toggl
 Objective labels float and their world beacons pulse/rotate; reduced-motion
 preferences disable the motion, and completed objectives hide their beacons.
 
-Cannon collection now equips it immediately. In cannon mode, carcasses within
+Spray is selected by default when the kit is available. Unlocking the Ant Launcher preserves the selected tool; press 3 to equip it. In launcher mode, carcasses within
 1.6 m underfoot automatically load up to the three-ant limit; no interaction key is needed.
 Dead ants settle on visible paving and raised platforms rather than falling to
 world zero. Their thicker flattened pose and raised legs keep them above the surface.
